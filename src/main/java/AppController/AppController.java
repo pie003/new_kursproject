@@ -15,6 +15,7 @@ import main_object.Excuse.ExcuseFactory;
 import main_object.Excuse.ExcuseParams;
 import main_object.Request.GenerationRequest;
 import main_object.User.User;
+import new_project.mew_project.LogManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
@@ -58,11 +59,11 @@ public class AppController {
                 User user = userOpt.get();
                 session.setAttribute("userId", user.getId());
                 session.setAttribute("userEmail", user.getEmail());
-                session.setAttribute("userRole", user.getRole().getRoleName());
                 return "redirect:/dashboard";
             }
         } catch (SQLException e) {
-            model.addAttribute("error", "Ошибка базы данных: " + e.getMessage());
+            LogManager.logError("Login failed for email: " + email, e);
+            model.addAttribute("error", "Ошибка сервера. Пожалуйста, попробуйте позже.");
             return "login";
         }
         model.addAttribute("error", "Неверный email или пароль");
@@ -89,19 +90,26 @@ public class AppController {
             model.addAttribute("error", "Пароли не совпадают");
             return "register";
         }
-        
+
         try {
             userService.register(email, password);
             model.addAttribute("success", "Регистрация прошла успешно! Теперь вы можете войти.");
             return "login";
+
         } catch (IllegalArgumentException e) {
+            // Ошибки валидации — показываем пользователю
             model.addAttribute("error", e.getMessage());
             return "register";
+
         } catch (SQLException e) {
+            // Логируем полную ошибку в файл
+            LogManager.logError("Registration failed for email: " + email, e);
+
+            // Пользователю показываем только общее сообщение
             if (e.getMessage().contains("already exists")) {
                 model.addAttribute("error", "Пользователь с таким email уже существует");
             } else {
-                model.addAttribute("error", "Ошибка базы данных: " + e.getMessage());
+                model.addAttribute("error", "Ошибка сервера. Пожалуйста, попробуйте позже.");
             }
             return "register";
         }

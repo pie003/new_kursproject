@@ -13,9 +13,9 @@ import java.sql.SQLException;
  * @author Ирина
  */
 public class DatabaseConfig {
-    private final static String URL = "jdbc:postgresql://192.168.0.178:5432/postgres";
-    private final static String USER = "add_user";
-    private final static String PASSWORD = "adduserpass";
+    private final static String URL = System.getenv("DB_URL");
+    private final static String USER = System.getenv("DB_USER");
+    private final static String PASSWORD = System.getenv("DB_PASSWORD");
     
     static {
         try {

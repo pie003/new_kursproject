@@ -10,7 +10,6 @@ package main_object.User;
  */
 public enum UserRole {
     STUDENT("student"),
-    TEACHER("teacher"),
     ADMIN("admin");
     
     private final String roleName;

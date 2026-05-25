@@ -8,6 +8,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -21,9 +23,9 @@ import main_object.Request.GenerationRequestFactory;
 public class GenerationRequestRepository {
     public GenerationRequest save(GenerationRequest request) throws SQLException {
         String sql = """
-            INSERT INTO excuse_generator.generation_requests 
-            (user_id, params_id, generated_text, status, is_saved, error_message) 
-            VALUES (?, ?, ?, ?, ?, ?) 
+            INSERT INTO excuse_generator.requests 
+            (user_id, params_id, generated_text, status, created_at, is_saved, error_message)  
+            VALUES (?, ?, ?, ?, ?, ?, ?) 
             RETURNING id
         """;
         
@@ -34,8 +36,9 @@ public class GenerationRequestRepository {
             stmt.setLong(2, request.getParams().getId());
             stmt.setString(3, request.getGeneratedText());
             stmt.setString(4, request.getStatus().getCode());
-            stmt.setBoolean(5, request.isSaved());
-            stmt.setString(6, request.getErrorMessage());
+            stmt.setTimestamp(5, Timestamp.valueOf(LocalDateTime.now()));
+            stmt.setBoolean(6, request.isSaved());
+            stmt.setString(7, request.getErrorMessage());
             
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
@@ -48,7 +51,7 @@ public class GenerationRequestRepository {
     
     public GenerationRequest update(GenerationRequest request) throws SQLException {
         String sql = """
-            UPDATE excuse_generator.generation_requests 
+            UPDATE excuse_generator.requests 
             SET generated_text = ?, status = ?, is_saved = ?, error_message = ?
             WHERE id = ?
         """;
@@ -76,7 +79,7 @@ public class GenerationRequestRepository {
     }
     
     public Optional<GenerationRequest> findById(Long id) throws SQLException {
-        String sql = "SELECT * FROM excuse_generator.generation_requests WHERE id = ?";
+        String sql = "SELECT * FROM excuse_generator.requests WHERE id = ?";
         
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -98,7 +101,7 @@ public class GenerationRequestRepository {
     }
     
     public List<GenerationRequest> findByUserId(Long userId) throws SQLException {
-        String sql = "SELECT * FROM excuse_generator.generation_requests WHERE user_id = ? ORDER BY created_at DESC";
+        String sql = "SELECT * FROM excuse_generator.requests WHERE user_id = ? ORDER BY created_at DESC";
         List<GenerationRequest> requests = new ArrayList<>();
         
         try (Connection conn = DatabaseConfig.getConnection();
@@ -121,7 +124,7 @@ public class GenerationRequestRepository {
     }
     
     public void deleteById(Long id) throws SQLException {
-        String sql = "DELETE FROM excuse_generator.generation_requests WHERE id = ?";
+        String sql = "DELETE FROM excuse_generator.requests WHERE id = ?";
         
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -132,7 +135,7 @@ public class GenerationRequestRepository {
     }
     
     public List<GenerationRequest> findSavedByUserId(Long userId) throws SQLException {
-        String sql = "SELECT * FROM excuse_generator.generation_requests WHERE user_id = ? AND is_saved = true ORDER BY created_at DESC";
+        String sql = "SELECT * FROM excuse_generator.requests WHERE user_id = ? AND is_saved = true ORDER BY created_at DESC";
         List<GenerationRequest> requests = new ArrayList<>();
         
         try (Connection conn = DatabaseConfig.getConnection();

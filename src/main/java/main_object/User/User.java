@@ -96,13 +96,6 @@ public class User {
     }
     
     /**
-     * Проверка, является ли пользователь преподавателем
-     */
-    public boolean isTeacher() {
-        return this.role == UserRole.TEACHER;
-    }
-    
-    /**
      * Проверка, является ли пользователь студентом
      */
     public boolean isStudent() {

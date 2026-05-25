@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 public class ExcuseService {
     private final ExcuseParamsRepository paramsRepository = new ExcuseParamsRepository();
     private final GenerationRequestRepository requestRepository = new GenerationRequestRepository();
+    private final GigaChatService gigaChatService = new GigaChatService();
     
     // Создание нового запроса
     public GenerationRequest createRequest(Long userId, ExcuseParams params) throws SQLException {
@@ -32,19 +33,7 @@ public class ExcuseService {
         GenerationRequest request = GenerationRequestFactory.createNewRequest(userId, params);
         return requestRepository.save(request);
     }
-    
-    // Генерация текста (пока заглушка, потом заменим на GigaChat)
-    public String generateText(ExcuseParams params) {
-        return String.format("""
-            <div style="background: #f0f4ff; padding: 20px; border-radius: 10px;">
-                <p><strong>%s</strong></p>
-                <p>Пишу вам, чтобы объяснить ситуацию с несданной работой.</p>
-                <p>К сожалению, я не смог(ла) сдать задание вовремя из-за %s.</p>
-                <p>Приношу извинения и обязуюсь сдать работу.</p>
-            </div>
-            """, params.getRecipient(), params.getEventType().getDisplayName());
-    }
-    
+
     // Сохранение сгенерированного текста
     public GenerationRequest saveGeneratedText(Long requestId, String generatedText) throws SQLException {
         Optional<GenerationRequest> requestOpt = requestRepository.findById(requestId);
@@ -81,5 +70,19 @@ public class ExcuseService {
     // Получить запрос по ID
     public Optional<GenerationRequest> getRequestById(Long id) throws SQLException {
         return requestRepository.findById(id);
-    } 
+    }
+    
+    public String generateText(ExcuseParams params) {
+        String prompt = gigaChatService.buildPrompt(
+            params.getEventType().getDisplayName(),
+            params.getRecipient(),
+            params.getFormalityLevel().getDisplayName(),
+            params.getUrgency().getDisplayName(),
+            params.getTone().getDisplayName(),
+            params.isSelfIronyAllowed(),
+            params.getCustomDetails()
+        );
+        
+        return gigaChatService.sendPrompt(prompt);
+    }
 }

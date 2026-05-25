@@ -10,6 +10,8 @@ import main_object.User.User;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import main_object.User.UserFactory;
 import org.mindrot.jbcrypt.BCrypt;
 
@@ -43,7 +45,7 @@ public class UserRepository {
         
         String passwordHash = BCrypt.hashpw(rawPassword, BCrypt.gensalt(12));
         
-        String sql = "INSERT INTO excuse_generator.users (email, password_hash, role) VALUES (?, ?, ?) RETURNING id";
+        String sql = "INSERT INTO excuse_generator.users (email, password_hash, role, created_at) VALUES (?, ?, ?, ?) RETURNING id";
         
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -51,6 +53,7 @@ public class UserRepository {
             stmt.setString(1, email.toLowerCase());
             stmt.setString(2, passwordHash);
             stmt.setString(3, "student");
+            stmt.setTimestamp(4, Timestamp.valueOf(LocalDateTime.now()));
             
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
@@ -73,13 +76,26 @@ public class UserRepository {
             if (rs.next()) {
                 String passwordHash = rs.getString("password_hash");
                 if (BCrypt.checkpw(rawPassword, passwordHash)) {
-                    User user = UserFactory.createFromResultSet(rs);
-                    return Optional.of(user);
+                    Long userId = rs.getLong("id");
+                    updateLastLogin(userId);
+                    return findByEmail(email);
                 }
             }
         }
     }
     return Optional.empty();
+    }
+    
+    public void updateLastLogin(Long userId) throws SQLException {
+        String sql = "UPDATE excuse_generator.users SET last_login_at = ? WHERE id = ?";
+        
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setTimestamp(1, Timestamp.valueOf(LocalDateTime.now()));
+            stmt.setLong(2, userId);
+            stmt.executeUpdate();
+        }
     }
 }
 
