@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Сервис «Почему я не сдал вовремя»</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .main-content {
+            padding: 30px;
+        }
+        
+        /* Стили для картинки-мема */
+        .meme-container {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        
+        .funny-meme {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transition: transform 0.3s;
+            cursor: pointer;
+        }
+        
+        .funny-meme:hover {
+            transform: scale(1.02);
+        }
+        
+        /* Демо-секция */
+        .demo-section {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border: 2px solid #f59e0b;
+        }
+        
+        .demo-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .demo-title span {
+            font-size: 24px;
+        }
+        
+        .demo-title h2 {
+            color: #92400e;
+            font-size: 20px;
+        }
+        
+        .demo-badge {
+            background: #f59e0b;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .demo-form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: flex-end;
+        }
+        
+        .demo-form-group {
+            flex: 1;
+            min-width: 160px;
+        }
+        
+        .demo-form-group label {
+            display: block;
+            font-size: 12px;
+            color: #92400e;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        .demo-form-group select,
+        .demo-form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #fcd34d;
+            border-radius: 8px;
+            background: white;
+            font-size: 14px;
+        }
+        
+        .demo-form button {
+            background: #f59e0b;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .demo-form button:hover {
+            background: #d97706;
+            transform: translateY(-2px);
+        }
+        
+        .demo-result {
+            margin-top: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            border-left: 4px solid #f59e0b;
+        }
+        
+        .demo-note {
+            margin-top: 15px;
+            font-size: 12px;
+            color: #92400e;
+            text-align: center;
+        }
+        
+        .demo-note a {
+            color: #d97706;
+            text-decoration: none;
+        }
+        
+        /* Секция входа/регистрации */
+        .auth-buttons {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 12px 25px;
+            margin: 0 10px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background: #48bb78;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #38a169;
+            transform: translateY(-2px);
+        }
+        
+        /* Особенности сервиса */
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .feature {
+            text-align: center;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+        
+        .feature:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        
+        .feature-icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+        
+        .feature h3 {
+            color: #667eea;
+            font-size: 16px;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            background: #f9f9f9;
+            color: #666;
+            font-size: 12px;
+        }
+        
+        @media (max-width: 768px) {
+            .demo-form {
+                flex-direction: column;
+            }
+            .demo-form-group {
+                width: 100%;
+            }
+            .auth-buttons .btn {
+                display: block;
+                margin: 10px auto;
+                max-width: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📝 Сервис «Почему я не сдал вовремя»</h1>
+            <p>Помогаем красиво объяснить любую оплошность</p>
+        </header>
+        
+        <div class="main-content">
+            
+            <!-- КАРТИНКА-МЕМ -->
+            <div class="meme-container">
+                <img src="/images/123.jpg" alt="Забавный мем" class="funny-meme" 
+                     onerror="this.src='https://placehold.co/600x200/667eea/white?text=Мем+не+загрузился'">
+            </div>
+            
+            <!-- Демо-секция на главной странице -->
+            <div class="demo-section">
+                <div class="demo-title">
+                    <span>🎮</span>
+                    <h2>Попробуйте прямо сейчас!</h2>
+                    <span class="demo-badge">Без регистрации</span>
+                </div>
+                
+                <form class="demo-form" action="/demo-generate" method="post">
+                    <div class="demo-form-group">
+                        <label>📌 Тип события</label>
+                        <select name="eventType">
+                            <option value="MISSED_DEADLINE">Пропуск дедлайна</option>
+                            <option value="TECHNICAL_ISSUE">Технические проблемы</option>
+                            <option value="HEALTH_ISSUES">Проблемы со здоровьем</option>
+                            <option value="FAMILY_REASONS">Семейные обстоятельства</option>
+                        </select>
+                    </div>
+                    <div class="demo-form-group">
+                        <label>👤 Адресат</label>
+                        <input type="text" name="recipient" value="Уважаемый преподаватель">
+                    </div>
+                    <div class="demo-form-group">
+                        <label>🎭 Тон</label>
+                        <select name="tone">
+                            <option value="NEUTRAL">Нейтральный</option>
+                            <option value="APOLOGETIC">Извиняющийся</option>
+                            <option value="CONSTRUCTIVE">Конструктивный</option>
+                        </select>
+                    </div>
+                    <div class="demo-form-group">
+                        <label>📊 Формальность</label>
+                        <select name="formality">
+                            <option value="MEDIUM">Средний</option>
+                            <option value="FORMAL">Официальный</option>
+                        </select>
+                    </div>
+                    <div class="demo-form-group">
+                        <button type="submit">✨ Сгенерировать</button>
+                    </div>
+                </form>
+                
+                <div class="demo-result" th:utext="${demoText}">
+                    <p style="color: #999;">Настройте параметры и нажмите «Сгенерировать»</p>
+                </div>
+                
+                <div class="demo-note">
+                    💡 Это демо-версия. <a href="/register">Зарегистрируйтесь</a>, чтобы сохранять результаты и получить доступ ко всем функциям!
+                </div>
+            </div>
+            
+            <!-- Кнопки входа/регистрации -->
+            <div class="auth-buttons">
+                <a href="/login" class="btn btn-primary">🔐 Вход</a>
+                <a href="/register" class="btn btn-secondary">📝 Регистрация</a>
+            </div>
+            
+            <!-- Особенности сервиса -->
+            <div class="features">
+                <div class="feature">
+                    <div class="feature-icon">🎯</div>
+                    <h3>8 типов событий</h3>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🎭</div>
+                    <h3>6 стилей тона</h3>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">⚡</div>
+                    <h3>4 уровня срочности</h3>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">💾</div>
+                    <h3>Сохранение результатов</h3>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>© 2026 Сервис «Почему я не сдал вовремя» | Помогаем студентам красиво объяснять любые ситуации</p>
+        </footer>
+    </div>
+</body>
+</html>

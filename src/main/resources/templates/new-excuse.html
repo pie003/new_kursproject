@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Новое объяснение</title>
+</head>
+<body>
+    <h2>Новое объяснение</h2>
+    <form action="/generate" method="post">
+        Тип события: 
+        <select name="eventType">
+            <option value="пропуске дедлайна">Пропуск дедлайна</option>
+            <option value="технических проблемах">Технические проблемы</option>
+        </select><br>
+        Адресат: <input type="text" name="recipient" value="Уважаемый преподаватель"><br>
+        <button type="submit">Сгенерировать</button>
+    </form>
+    
+    <div th:if="${result}" style="margin-top: 20px; border: 1px solid #ccc; padding: 10px;">
+        <h3>Результат:</h3>
+        <p th:text="${result}"></p>
+    </div>
+    
+    <a href="/dashboard">Назад</a>
+</body>
+</html>
