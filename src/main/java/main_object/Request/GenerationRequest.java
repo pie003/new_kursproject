@@ -27,7 +27,9 @@ public class GenerationRequest {
     private boolean isSaved;                
     private int retryCount;
     
-    public GenerationRequest() {}
+    public GenerationRequest() {
+        this.params = new ExcuseParams();
+    }
     
     public void markAsSuccess(String generatedText) {
         if (generatedText == null || generatedText.trim().isEmpty()) {

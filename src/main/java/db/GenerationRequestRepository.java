@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import main_object.Excuse.ExcuseParams;
 import main_object.Request.GenerationRequest;
 import main_object.Request.GenerationRequestFactory;
 
@@ -61,7 +62,7 @@ public class GenerationRequestRepository {
             stmt.setLong(1, request.getParams().getId());
             stmt.setString(2, request.getGeneratedText());
             stmt.setString(3, request.getStatus().getCode());
-            stmt.setTimestamp(4, Timestamp.valueOf(request.getUpdatedAt()));
+            stmt.setTimestamp(4, Timestamp.valueOf(LocalDateTime.now()));
             stmt.setBoolean(5, request.isSaved());
             stmt.setString(6, request.getErrorMessage());
             stmt.setLong(7, request.getId());
@@ -169,42 +170,123 @@ public class GenerationRequestRepository {
         return Optional.empty();
     }
     
-    public List<GenerationRequest> findWithFilters(Long userId, List<String> statuses, String search) throws SQLException {
-        StringBuilder sql = new StringBuilder("SELECT * FROM excuse_generator.requests WHERE user_id = ?");
-        if (statuses != null && !statuses.isEmpty()) {
-            sql.append(" AND status IN (");
-            for (int i = 0; i < statuses.size(); i++) {
-                sql.append(i == 0 ? "?" : ", ?");
-            }
-            sql.append(")");
+    public List<GenerationRequest> findSavedAndCompleted(Long userId, String search, String recipient,
+                                                            String formalityLevel, String urgency,
+                                                            String tone, String length) throws SQLException {
+        StringBuilder sql = new StringBuilder("""
+        SELECT gr.* FROM excuse_generator.requests gr
+        JOIN excuse_generator.excuse_params ep ON gr.params_id = ep.id
+        WHERE gr.user_id = ? AND is_saved = true
+        """);
+        List<Object> params = new ArrayList<>();
+        params.add(userId);
+
+        if (recipient != null && !recipient.trim().isEmpty()) {
+            sql.append(" AND ep.recipient ILIKE ?");
+            params.add("%" + recipient + "%");
         }
         if (search != null && !search.trim().isEmpty()) {
-            sql.append(" AND (generated_text ILIKE ? OR params_id IN (SELECT id FROM excuse_generator.excuse_params WHERE event_description ILIKE ? OR desired_action ILIKE ? OR recipient ILIKE ?))");
+            sql.append(" AND (gr.generated_text ILIKE ? OR ep.event_description ILIKE ?)");
+            String like = "%" + search + "%";
+            params.add(like);
+            params.add(like);
         }
-        sql.append(" ORDER BY updated_at DESC");
+        if (formalityLevel != null && !formalityLevel.isEmpty()) {
+            sql.append(" AND ep.formality_level = ?");
+            params.add(formalityLevel);
+        }
+        if (urgency != null && !urgency.isEmpty()) {
+            sql.append(" AND ep.urgency = ?");
+            params.add(urgency);
+        }
+        if (tone != null && !tone.isEmpty()) {
+            sql.append(" AND ep.tone = ?");
+            params.add(tone);
+        }
+        if (length != null && !length.isEmpty()) {
+            sql.append(" AND ep.length = ?");
+            params.add(length);
+        }
+        sql.append(" ORDER BY gr.updated_at DESC");
+
         try (Connection conn = DatabaseConfig.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql.toString())) {
-            int paramIndex = 1;
-            stmt.setLong(paramIndex++, userId);
-            if (statuses != null && !statuses.isEmpty()) {
-                for (String s : statuses) {
-                    stmt.setString(paramIndex++, s);
+        PreparedStatement stmt = conn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                stmt.setObject(i + 1, params.get(i));
+            }
+        List<GenerationRequest> list = new ArrayList<>();
+        try (ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                GenerationRequest request = GenerationRequestFactory.createFromResultSet(rs);
+                Long paramsId = rs.getLong("params_id");
+                if (paramsId > 0) {
+                    request.setParams(ExcuseParamsRepository.findById(paramsId).orElse(null));
                 }
+                list.add(request);
             }
-            if (search != null && !search.trim().isEmpty()) {
-                String like = "%" + search + "%";
-                stmt.setString(paramIndex++, like);
-                stmt.setString(paramIndex++, like);
-                stmt.setString(paramIndex++, like);
-                stmt.setString(paramIndex++, like);
-            }
-            List<GenerationRequest> list = new ArrayList<>();
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    list.add(GenerationRequestFactory.createFromResultSet(rs));
-                }
-            }
-            return list;
+        }
+        return list;
         }
     }
+    
+    public List<GenerationRequest> findDrafts(Long userId, String search, String recipient,
+                                            String formalityLevel, String urgency,
+                                            String tone, String length) throws SQLException {
+     StringBuilder sql = new StringBuilder("""
+         SELECT gr.*, ep.recipient, ep.event_description, ep.formality_level, ep.urgency, ep.tone, ep.length,
+                ep.self_irony_allowed, ep.custom_details
+         FROM excuse_generator.requests gr
+         JOIN excuse_generator.excuse_params ep ON gr.params_id = ep.id
+         WHERE gr.user_id = ? AND gr.status IN ('draft', 'failed')
+     """);
+     List<Object> params = new ArrayList<>();
+     params.add(userId);
+
+     if (recipient != null && !recipient.trim().isEmpty()) {
+         sql.append(" AND ep.recipient ILIKE ?");
+         params.add("%" + recipient + "%");
+     }
+     if (search != null && !search.trim().isEmpty()) {
+         sql.append(" AND (gr.generated_text ILIKE ? OR ep.event_description ILIKE ?)");
+         String like = "%" + search + "%";
+         params.add(like);
+         params.add(like);
+     }
+     if (formalityLevel != null && !formalityLevel.trim().isEmpty()) {
+         sql.append(" AND ep.formality_level = ?");
+         params.add(formalityLevel);
+     }
+     if (urgency != null && !urgency.trim().isEmpty()) {
+         sql.append(" AND ep.urgency = ?");
+         params.add(urgency);
+     }
+     if (tone != null && !tone.trim().isEmpty()) {
+         sql.append(" AND ep.tone = ?");
+         params.add(tone);
+     }
+     if (length != null && !length.trim().isEmpty()) {
+         sql.append(" AND ep.length = ?");
+         params.add(length);
+     }
+     sql.append(" ORDER BY gr.updated_at DESC");
+
+     try (Connection conn = DatabaseConfig.getConnection();
+          PreparedStatement stmt = conn.prepareStatement(sql.toString())) {
+         for (int i = 0; i < params.size(); i++) {
+             stmt.setObject(i + 1, params.get(i));
+         }
+         List<GenerationRequest> list = new ArrayList<>();
+         try (ResultSet rs = stmt.executeQuery()) {
+             while (rs.next()) {
+                GenerationRequest request = GenerationRequestFactory.createFromResultSet(rs);
+                Long paramsId = rs.getLong("params_id");
+                if (paramsId > 0) {
+                    request.setParams(ExcuseParamsRepository.findById(paramsId).orElse(null));
+                }
+                list.add(request);
+             }
+         }
+         return list;
+     }
+ }
 }

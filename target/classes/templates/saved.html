@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Сохранённые и завершённые объяснения</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        h1 {
+            margin: 0;
+            color: #333;
+            font-size: 24px;
+        }
+        .back-link {
+            background: #f0f0f0;
+            padding: 8px 20px;
+            border-radius: 25px;
+            text-decoration: none;
+            color: #667eea;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        .filter-bar {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+        .filter-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: flex-end;
+        }
+        .filter-group {
+            flex: 1;
+            min-width: 150px;
+        }
+        .filter-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 4px;
+            color: #555;
+        }
+        .filter-group input, .filter-group select {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        .filter-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .filter-actions button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .filter-actions a {
+            background: #e0e0e0;
+            padding: 8px 20px;
+            border-radius: 25px;
+            text-decoration: none;
+            color: #333;
+            font-size: 14px;
+        }
+        .request-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 15px;
+            padding: 18px;
+            margin-bottom: 15px;
+            background: #fff;
+            transition: 0.2s;
+        }
+        .request-card:hover {
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        .request-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .star {
+            color: #f5b042;
+            font-size: 20px;
+            margin-right: 8px;
+        }
+        .recipient {
+            font-weight: bold;
+            color: #333;
+            font-size: 15px;
+        }
+        .date {
+            font-size: 13px;
+            color: #888;
+            margin-left: 10px;
+        }
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+        }
+        .status-saved { background: #48bb78; }
+        .status-completed { background: #667eea; }
+        .event-preview {
+            margin: 12px 0;
+            color: #555;
+            font-size: 14px;
+        }
+        .details-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 6px 18px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .empty-message {
+            text-align: center;
+            padding: 40px;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>⭐ Сохранённые и завершённые объяснения</h1>
+        <a href="/dashboard" class="back-link">← Назад в кабинет</a>
+    </div>
+
+    <div class="filter-bar">
+        <form method="get" action="/saved">
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label>🔍 Поиск (событие / текст)</label>
+                    <input type="text" name="search" placeholder="Введите текст..." th:value="${search}">
+                </div>
+                <div class="filter-group">
+                    <label>👨‍🏫 Адресат</label>
+                    <input type="text" name="recipient" placeholder="Имя или должность..." th:value="${recipient}">
+                </div>
+                <div class="filter-group">
+                    <label>📊 Формальность</label>
+                    <select name="formalityLevel">
+                        <option value="">Все</option>
+                        <option th:each="f : ${formalityLevels}" th:value="${f.code}" th:text="${f.displayName}"
+                                th:selected="${selectedFormality == f.code}"></option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>⚡ Срочность</label>
+                    <select name="urgency">
+                        <option value="">Все</option>
+                        <option th:each="u : ${urgencies}" th:value="${u.code}" th:text="${u.displayName}"
+                                th:selected="${selectedUrgency == u.code}"></option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>🎭 Тон</label>
+                    <select name="tone">
+                        <option value="">Все</option>
+                        <option th:each="t : ${tones}" th:value="${t.code}" th:text="${t.displayName}"
+                                th:selected="${selectedTone == t.code}"></option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>📏 Размер</label>
+                    <select name="length">
+                        <option value="">Все</option>
+                        <option th:each="l : ${lengths}" th:value="${l.code}" th:text="${l.displayName}"
+                                th:selected="${selectedLength == l.code}"></option>
+                    </select>
+                </div>
+                <div class="filter-actions">
+                    <button type="submit">Применить</button>
+                    <a href="/saved">Сбросить</a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div th:if="${error}" style="background: #fed7d7; color: #c53030; padding: 12px; border-radius: 10px; margin-bottom: 20px;" th:text="${error}"></div>
+
+    <div th:if="${#lists.isEmpty(requests)}" class="empty-message">
+        <p>Нет сохранённых или завершённых объяснений.</p>
+        <a href="/new-excuse" style="color: #667eea;">✨ Создать новое объяснение</a>
+    </div>
+
+    <div th:each="req : ${requests}" class="request-card">
+        <div class="request-header">
+            <div>
+                <span th:if="${req.status.code == 'saved'}" class="star">⭐</span>
+                <span th:unless="${req.status.code == 'saved'}" class="star" style="color:#ccc;">☆</span>
+                <span class="recipient" th:text="${req.params.recipient}"></span>
+                <span class="date" th:text="|• ${#temporals.format(req.createdAt, 'dd.MM.yyyy HH:mm')}|"></span>
+            </div>
+            <div>
+                <span class="status-badge" th:classappend="${req.status.code == 'saved' ? 'status-saved' : 'status-completed'}"
+                      th:text="${req.status.displayName}"></span>
+            </div>
+        </div>
+        <div class="event-preview">
+            📝 <span th:text="${req.params.eventDescription}"></span>
+        </div>
+        <div style="margin-top: 12px;">
+            <form th:action="@{/request/{id}(id=${req.id})}" method="get" style="display:inline">
+                <button type="submit" class="details-btn">📄 Подробнее</button>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>

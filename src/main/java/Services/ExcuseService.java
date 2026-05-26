@@ -100,11 +100,23 @@ public class ExcuseService {
         }
     }
     
-    public List<GenerationRequest> getUserRequestsWithFilters(Long userId, List<String> statuses, String search) throws SQLException {
-        return requestRepository.findWithFilters(userId, statuses, search);
+    public List<GenerationRequest> getSavedAndCompletedRequests(Long userId, String search, String recipient,
+                                                             String formalityLevel, String urgency,
+                                                             String tone, String length) throws SQLException {
+        return requestRepository.findSavedAndCompleted(userId, search, recipient, formalityLevel, urgency, tone, length);
     }
     
     public Optional<GenerationRequest> getRequestById(Long id) throws SQLException {
         return requestRepository.findById(id);
+    }
+    
+    public List<GenerationRequest> getUserDrafts(Long userId, String search, String recipient,
+                                              String formalityLevel, String urgency,
+                                              String tone, String length) throws SQLException {
+    return requestRepository.findDrafts(userId, search, recipient, formalityLevel, urgency, tone, length);
+}
+
+    public void deleteDraft(Long requestId) throws SQLException {
+        requestRepository.deleteById(requestId);
     }
 }

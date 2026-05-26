@@ -29,6 +29,7 @@ public class GenerationRequestFactory {
         request.setGeneratedText(rs.getString("generated_text"));
         request.setStatus(RequestStatus.fromCode(rs.getString("status")));
         request.setSaved(rs.getBoolean("is_saved"));
+        request.getParams().setId(rs.getLong("params_id"));
         
         java.sql.Timestamp createdAt = rs.getTimestamp("created_at");
         if (createdAt != null) {

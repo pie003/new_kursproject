@@ -15,6 +15,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import main_object.Excuse.EventType;
 import main_object.Excuse.ExcuseFactory;
 import main_object.Excuse.ExcuseParams;
 import main_object.Excuse.FormalityLevel;
@@ -26,6 +28,7 @@ import main_object.User.User;
 import new_project.mew_project.LogManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
  *
@@ -158,23 +161,17 @@ public class AppController {
      * Страница создания нового объяснения
      */
     @GetMapping("/new-excuse")
-    public String newExcuse(HttpSession session, Model model) {
+    public String newExcuse(@RequestParam(required = false) Long requestId,
+                            @RequestParam(required = false) Boolean clear,
+                            HttpSession session, Model model) {
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) return "redirect:/login";
+        
+        // Всегда передаём списки enum
         model.addAttribute("formalityLevels", FormalityLevel.values());
         model.addAttribute("urgencies", Urgency.values());
         model.addAttribute("tones", Tone.values());
         model.addAttribute("lengths", Length.values());
-        try {
-            Optional<GenerationRequest> draft = excuseService.getCurrentDraft(userId);
-            if (draft.isPresent()) {
-                GenerationRequest request = draft.get();
-                model.addAttribute("requestId", request.getId());
-                model.addAttribute("params", request.getParams());
-            }
-        } catch (SQLException e) {
-            model.addAttribute("error", "Ошибка загрузки черновика");
-        }
         return "new-excuse";
     }
 
@@ -205,6 +202,10 @@ public class AppController {
             model.addAttribute("generatedText", generatedText);
             model.addAttribute("requestId", request.getId());
             model.addAttribute("params", params);
+            model.addAttribute("formalityLevels", FormalityLevel.values());
+            model.addAttribute("urgencies", Urgency.values());
+            model.addAttribute("tones", Tone.values());
+            model.addAttribute("lengths", Length.values());
         } catch (SQLException e) {
             model.addAttribute("error", "Ошибка: " + e.getMessage());
         } catch (Exception e) {
@@ -214,15 +215,16 @@ public class AppController {
     }
 
     @PostMapping("/save-request")
-    public String saveRequest(@RequestParam Long requestId, HttpSession session) {
+    public String saveRequest(@RequestParam Long requestId, HttpSession session, RedirectAttributes redirectAttributes) {
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) return "redirect:/login";
         try {
             excuseService.markAsSaved(requestId);
+            redirectAttributes.addFlashAttribute("success", "Запрос сохранён");
         } catch (SQLException e) {
-            System.err.println("Ошибка сохранения: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("error", "Ошибка сохранения");
         }
-        return "redirect:/new-excuse?clear=true";
+        return "redirect:/new-excuse";
     }
     
     /**
@@ -247,18 +249,46 @@ public class AppController {
      * Сохранённые объяснения
      */
     @GetMapping("/saved")
-    public String saved(HttpSession session, Model model) {
+    public String saved(@RequestParam(required = false) String search,
+                        @RequestParam(required = false) String recipient,
+                        @RequestParam(required = false) String formalityLevel,
+                        @RequestParam(required = false) String urgency,
+                        @RequestParam(required = false) String tone,
+                        @RequestParam(required = false) String length,
+                        HttpSession session, Model model) {
         Long userId = (Long) session.getAttribute("userId");
-        if (userId == null) {
-            return "redirect:/login";
-        }
-        
+        if (userId == null) return "redirect:/login";
         try {
-            model.addAttribute("requests", excuseService.getUserSavedRequests(userId));
+            List<GenerationRequest> requests;
+            // Если есть хоть один непустой фильтр – применяем фильтрацию
+            if (hasAnyFilter(search, recipient, formalityLevel, urgency, tone, length)) {
+                requests = excuseService.getSavedAndCompletedRequests(userId, search, recipient, formalityLevel, urgency, tone, length);
+                model.addAttribute("search", search);
+                model.addAttribute("recipient", recipient);
+                model.addAttribute("selectedFormality", formalityLevel);
+                model.addAttribute("selectedUrgency", urgency);
+                model.addAttribute("selectedTone", tone);
+                model.addAttribute("selectedLength", length);
+            } else {
+                requests = excuseService.getUserSavedRequests(userId);
+                // Не передаём фильтры – поля останутся пустыми
+            }
+            model.addAttribute("requests", requests);
+            model.addAttribute("formalityLevels", FormalityLevel.values());
+            model.addAttribute("urgencies", Urgency.values());
+            model.addAttribute("tones", Tone.values());
+            model.addAttribute("lengths", Length.values());
         } catch (SQLException e) {
             model.addAttribute("error", "Ошибка загрузки сохранённых: " + e.getMessage());
         }
         return "saved";
+    }
+
+    private boolean hasAnyFilter(String... values) {
+        for (String v : values) {
+            if (v != null && !v.trim().isEmpty()) return true;
+        }
+        return false;
     }
     
     /**
@@ -300,8 +330,8 @@ public class AppController {
                                @RequestParam(required = false, defaultValue = "MEDIUM") String formality,
                                Model model) {
 
-        String eventTypeRu = getEventTypeRussian(eventType);
-        String toneRu = getToneRussian(tone);
+        String eventTypeRu = EventType.fromCode(eventType).getDisplayName();
+        String toneRu = Tone.fromCode(tone).getDisplayName();
 
         String demoText = String.format("""
             <div style="background: #fef3c7; padding: 15px; border-radius: 10px;">
@@ -318,56 +348,18 @@ public class AppController {
         model.addAttribute("demoText", demoText);
         return "index";
     }
-
-    private String getEventTypeRussian(String eventType) {
-        switch (eventType) {
-            case "MISSED_DEADLINE": return "пропуске дедлайна";
-            case "TECHNICAL_ISSUE": return "технических проблемах";
-            case "HEALTH_ISSUES": return "проблемах со здоровьем";
-            case "FAMILY_REASONS": return "семейных обстоятельствах";
-            default: return "сложившейся ситуации";
-        }
-    }
-
-    private String getToneRussian(String tone) {
-        switch (tone) {
-            case "NEUTRAL": return "нейтральный";
-            case "APOLOGETIC": return "извиняющийся";
-            case "CONSTRUCTIVE": return "конструктивный";
-            default: return "нейтральный";
-        }
-    }
     
     @PostMapping("/complete-request")
-    public String completeRequest(@RequestParam Long requestId, HttpSession session) {
+    public String completeRequest(@RequestParam Long requestId, HttpSession session, RedirectAttributes redirectAttributes) {
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) return "redirect:/login";
         try {
             excuseService.markAsCompleted(requestId);
+            redirectAttributes.addFlashAttribute("success", "Запрос завершён");
         } catch (SQLException e) {
-            System.err.println("Ошибка завершения: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("error", "Ошибка завершения");
         }
-        return "redirect:/new-excuse?clear=true";
-    }
-    
-    @GetMapping("/requests")
-    public String listRequests(@RequestParam(required = false) List<String> status,
-                               @RequestParam(required = false) String search,
-                               HttpSession session, Model model) {
-        Long userId = (Long) session.getAttribute("userId");
-        if (userId == null) return "redirect:/login";
-        try {
-            if (status == null || status.isEmpty()) {
-                status = Arrays.asList("generated", "saved", "completed");
-            }
-            List<GenerationRequest> requests = excuseService.getUserRequestsWithFilters(userId, status, search);
-            model.addAttribute("requests", requests);
-            model.addAttribute("selectedStatuses", status);
-            model.addAttribute("search", search);
-        } catch (SQLException e) {
-            model.addAttribute("error", "Ошибка загрузки запросов");
-        }
-        return "requests";
+        return "new-excuse";
     }
 
     @GetMapping("/request/{id}")
@@ -377,14 +369,63 @@ public class AppController {
         try {
             Optional<GenerationRequest> opt = excuseService.getRequestById(id);
             if (opt.isPresent() && opt.get().getUserId().equals(userId)) {
-                model.addAttribute("request", opt.get());
+                GenerationRequest request = opt.get();
+                model.addAttribute("request", request);
+                model.addAttribute("formalityDisplay", request.getParams().getFormalityLevel().getDisplayName());
+                model.addAttribute("urgencyDisplay", request.getParams().getUrgency().getDisplayName());
+                model.addAttribute("toneDisplay", request.getParams().getTone().getDisplayName());
+                model.addAttribute("lengthDisplay", request.getParams().getLength().getDisplayName());
                 return "request-details";
-            } else {
-                return "redirect:/requests";
-            }
+            } 
         } catch (SQLException e) {
             model.addAttribute("error", "Ошибка загрузки деталей");
-            return "requests";
         }
+        return "redirect:/saved";
+    }
+    
+    @GetMapping("/drafts")
+    public String drafts(@RequestParam(required = false) String search,
+                         @RequestParam(required = false) String recipient,
+                         @RequestParam(required = false) String formalityLevel,
+                         @RequestParam(required = false) String urgency,
+                         @RequestParam(required = false) String tone,
+                         @RequestParam(required = false) String length,
+                         HttpSession session, Model model) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) return "redirect:/login";
+        try {
+            List<GenerationRequest> drafts = excuseService.getUserDrafts(userId, search, recipient,
+                    formalityLevel, urgency, tone, length);
+            model.addAttribute("requests", drafts);
+            model.addAttribute("search", search != null ? search : "");
+            model.addAttribute("recipient", recipient != null ? recipient : "");
+            model.addAttribute("selectedFormality", formalityLevel != null ? formalityLevel : "");
+            model.addAttribute("selectedUrgency", urgency != null ? urgency : "");
+            model.addAttribute("selectedTone", tone != null ? tone : "");
+            model.addAttribute("selectedLength", length != null ? length : "");
+            model.addAttribute("formalityLevels", FormalityLevel.values());
+            model.addAttribute("urgencies", Urgency.values());
+            model.addAttribute("tones", Tone.values());
+            model.addAttribute("lengths", Length.values());
+        } catch (SQLException e) {
+            model.addAttribute("error", "Ошибка загрузки черновиков");
+        }
+        return "drafts";
+    }
+
+    @PostMapping("/delete-draft")
+    public String deleteDraft(@RequestParam Long requestId, HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) return "redirect:/login";
+        try {
+            // Доп. проверка, что черновик принадлежит пользователю
+            Optional<GenerationRequest> draft = excuseService.getRequestById(requestId);
+            if (draft.isPresent() && draft.get().getUserId().equals(userId)) {
+                excuseService.deleteDraft(requestId);
+            }
+        } catch (SQLException e) {
+            // лог
+        }
+        return "redirect:/drafts";
     }
 }
