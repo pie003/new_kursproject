@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Редактирование профиля</title>
+    <style>
+        /* копируем стили из register.html или общие */
+        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); margin: 0; padding: 20px; }
+        .container { max-width: 550px; margin: 0 auto; background: white; border-radius: 20px; padding: 30px; }
+        h1 { margin-bottom: 20px; }
+        .form-group { margin-bottom: 18px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: bold; }
+        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; }
+        button { background: #667eea; color: white; border: none; padding: 10px 20px; border-radius: 25px; cursor: pointer; }
+        .error-message { background: #fed7d7; color: #c53030; padding: 12px; margin-bottom: 20px; border-radius: 10px; }
+        .success-message { background: #c6f6d5; color: #276749; padding: 12px; margin-bottom: 20px; border-radius: 10px; }
+        .back-link { display: inline-block; margin-top: 20px; color: #667eea; text-decoration: none; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>⚙️ Редактирование профиля</h1>
+    <div th:if="${error}" class="error-message" th:text="${error}"></div>
+    <div th:if="${success}" class="success-message" th:text="${success}"></div>
+
+    <form action="/edit-profile" method="post">
+        <div class="form-group">
+            <label>Имя</label>
+            <input type="text" name="firstName" th:value="${user.firstName}" maxlength="100" required>
+        </div>
+        <div class="form-group">
+            <label>Фамилия</label>
+            <input type="text" name="lastName" th:value="${user.lastName}" maxlength="100" required>
+        </div>
+        <div class="form-group">
+            <label>Группа</label>
+            <input type="text" name="group" th:value="${user.group}" maxlength="50" required>
+        </div>
+        <div class="form-group">
+            <label>Пол</label>
+            <select name="gender" required>
+                <option value="MALE" th:selected="${user.gender == 'MALE'}">Мужской</option>
+                <option value="FEMALE" th:selected="${user.gender == 'FEMALE'}">Женский</option>
+                <option value="OTHER" th:selected="${user.gender == 'OTHER'}">Другой</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Новый пароль (оставьте пустым, если не хотите менять)</label>
+            <input type="password" name="password" minlength="6">
+        </div>
+        <div class="form-group">
+            <label>Подтверждение пароля</label>
+            <input type="password" name="confirmPassword">
+        </div>
+        <button type="submit">Сохранить изменения</button>
+    </form>
+    <a href="/dashboard" class="back-link">← Назад в личный кабинет</a>
+</div>
+</body>
+</html>

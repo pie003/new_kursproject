@@ -5,6 +5,7 @@
 package AppController;
 
 import Services.ExcuseService;
+import Services.GigaChatService;
 import Services.UserService;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -43,6 +44,9 @@ public class AppController {
     @Autowired
     private ExcuseService excuseService;
     
+    @Autowired
+    private GigaChatService gigaChatService;
+    
     /**
      * Главная страница
      */
@@ -51,6 +55,9 @@ public class AppController {
         if (session.getAttribute("userId") != null) {
             model.addAttribute("userEmail", session.getAttribute("userEmail"));
         }
+        // Передаём списки enum для выпадающих списков
+        model.addAttribute("eventTypes", EventType.values());
+        model.addAttribute("formalityLevels", FormalityLevel.values());
         return "index";
     }
 
@@ -167,11 +174,28 @@ public class AppController {
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) return "redirect:/login";
         
-        // Всегда передаём списки enum
         model.addAttribute("formalityLevels", FormalityLevel.values());
         model.addAttribute("urgencies", Urgency.values());
         model.addAttribute("tones", Tone.values());
         model.addAttribute("lengths", Length.values());
+        
+         if (requestId != null) {
+            try {
+                Optional<GenerationRequest> reqOpt = excuseService.getRequestById(requestId);
+                if (reqOpt.isPresent() && reqOpt.get().getUserId().equals(userId)) {
+                    GenerationRequest request = reqOpt.get();
+                    model.addAttribute("requestId", request.getId());
+                    model.addAttribute("params", request.getParams());  // ← ключевой момент
+                    model.addAttribute("generatedText", request.getGeneratedText());
+                    model.addAttribute("currentStatus", request.getStatus().getDisplayName());
+                } else {
+                    model.addAttribute("error", "Черновик не найден");
+                }
+            } catch (SQLException e) {
+                model.addAttribute("error", "Ошибка загрузки черновика");
+            }
+        }
+         
         return "new-excuse";
     }
 
@@ -220,7 +244,7 @@ public class AppController {
         if (userId == null) return "redirect:/login";
         try {
             excuseService.markAsSaved(requestId);
-            redirectAttributes.addFlashAttribute("success", "Запрос сохранён");
+            redirectAttributes.addFlashAttribute("success", "Запрос добавлен в избранное");
         } catch (SQLException e) {
             redirectAttributes.addFlashAttribute("error", "Ошибка сохранения");
         }
@@ -290,64 +314,26 @@ public class AppController {
         }
         return false;
     }
-    
-    /**
-     * Просмотр конкретного запроса
-     */
-    //@GetMapping("/view-request/{id}")
-    //public String viewRequest(@PathVariable Long id, HttpSession session, Model model) {
-    //    Long userId = (Long) session.getAttribute("userId");
-    //    if (userId == null) {
-    //        return "redirect:/login";
-    //    }
-        
-    //    try {
-    //        var requestOpt = excuseService.getRequestById(id);
-    //        if (requestOpt.isPresent() && requestOpt.get().getUserId().equals(userId)) {
-    //            model.addAttribute("request", requestOpt.get());
-     //           return "view-request";
-     //       } else {
-     //           return "redirect:/history";
-      //      }
-     //   } catch (SQLException e) {
-     //       model.addAttribute("error", "Ошибка загрузки: " + e.getMessage());
-     //       return "history";
-     //   }
-   // }
-    
-    /**
-     * Выход из аккаунта
-     */
+
     @GetMapping("/logout")
     public String logout(HttpSession session) {
         session.invalidate();
         return "redirect:/";
-    }  
+    }
+    
     @PostMapping("/demo-generate")
     public String demoGenerate(@RequestParam String eventType,
-                               @RequestParam String recipient,
-                               @RequestParam(required = false, defaultValue = "NEUTRAL") String tone,
-                               @RequestParam(required = false, defaultValue = "MEDIUM") String formality,
-                               Model model) {
-
-        String eventTypeRu = EventType.fromCode(eventType).getDisplayName();
-        String toneRu = Tone.fromCode(tone).getDisplayName();
-
-        String demoText = String.format("""
-            <div style="background: #fef3c7; padding: 15px; border-radius: 10px;">
-                <p><strong>📨 %s</strong></p>
-                <p>Пишу вам, чтобы объяснить ситуацию с несданной работой.</p>
-                <p>К сожалению, я не смог(ла) сдать задание вовремя из-за <strong>%s</strong>.</p>
-                <p>Я выбрал(а) <strong>%s</strong> тон для этого обращения.</p>
-                <p>Приношу свои извинения и обязуюсь сдать работу в ближайшее время.</p>
-                <hr>
-                <p><em>✨ Это демо-версия. <a href="/register" style="color: #d97706;">Зарегистрируйтесь</a>, чтобы сохранять результаты!</em></p>
-            </div>
-            """, recipient, eventTypeRu, toneRu);
-
-        model.addAttribute("demoText", demoText);
-        return "index";
-    }
+                           @RequestParam String recipient,
+                           @RequestParam String formalityLevel,
+                           Model model) {
+    String generatedText = gigaChatService.generateDemo(eventType, recipient, formalityLevel);
+    model.addAttribute("demoText", generatedText);
+    
+    model.addAttribute("eventTypes", EventType.values());
+    model.addAttribute("formalityLevels", FormalityLevel.values());
+        
+    return "index";
+}
     
     @PostMapping("/complete-request")
     public String completeRequest(@RequestParam Long requestId, HttpSession session, RedirectAttributes redirectAttributes) {
@@ -355,7 +341,7 @@ public class AppController {
         if (userId == null) return "redirect:/login";
         try {
             excuseService.markAsCompleted(requestId);
-            redirectAttributes.addFlashAttribute("success", "Запрос завершён");
+            redirectAttributes.addFlashAttribute("success", "Запрос сохранён");
         } catch (SQLException e) {
             redirectAttributes.addFlashAttribute("error", "Ошибка завершения");
         }
@@ -427,5 +413,48 @@ public class AppController {
             // лог
         }
         return "redirect:/drafts";
+    }
+    
+    @GetMapping("/edit-profile")
+public String editProfile(HttpSession session, Model model) {
+    Long userId = (Long) session.getAttribute("userId");
+    if (userId == null) return "redirect:/login";
+    try {
+        User user = userService.getUserById(userId).orElseThrow();
+        model.addAttribute("user", user);
+    } catch (SQLException e) {
+        model.addAttribute("error", "Ошибка загрузки профиля");
+    }
+    return "edit-profile";
+}
+
+    @PostMapping("/edit-profile")
+    public String updateProfile(@RequestParam String firstName,
+                                @RequestParam String lastName,
+                                @RequestParam String group,
+                                @RequestParam String gender,
+                                @RequestParam(required = false) String password,
+                                @RequestParam(required = false) String confirmPassword,
+                                HttpSession session, RedirectAttributes redirectAttributes) throws SQLException {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) return "redirect:/login";
+        // Если пароль передан и не пуст, проверяем совпадение
+        if (password != null && !password.trim().isEmpty()) {
+            if (!password.equals(confirmPassword)) {
+                redirectAttributes.addFlashAttribute("error", "Пароли не совпадают");
+                return "redirect:/edit-profile";
+            }
+            if (password.length() < 6) {
+                redirectAttributes.addFlashAttribute("error", "Пароль должен быть не менее 6 символов");
+                return "redirect:/edit-profile";
+            }
+            // Обновляем пароль
+            userService.changePassword(userId, password);
+        }
+        // Обновляем остальные поля
+        userService.updateProfile(userId, firstName, lastName, group, gender);
+        redirectAttributes.addFlashAttribute("success", "Профиль успешно обновлён");
+        // Обновляем email в сессии? Не меняем email, он остаётся прежним.
+        return "redirect:/dashboard";
     }
 }

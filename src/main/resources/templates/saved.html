@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Сохранённые и завершённые объяснения</title>
+    <title>Избранное и сохранённое — Сервис «Почему я не сдал вовремя»</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -160,7 +160,7 @@
 <body>
 <div class="container">
     <div class="header">
-        <h1>⭐ Сохранённые и завершённые объяснения</h1>
+        <h1>⭐ Избранное и сохранённое</h1>
         <a href="/dashboard" class="back-link">← Назад в кабинет</a>
     </div>
 
@@ -231,8 +231,10 @@
                 <span class="date" th:text="|• ${#temporals.format(req.createdAt, 'dd.MM.yyyy HH:mm')}|"></span>
             </div>
             <div>
-                <span class="status-badge" th:classappend="${req.status.code == 'saved' ? 'status-saved' : 'status-completed'}"
-                      th:text="${req.status.displayName}"></span>
+                <span class="status-badge" th:classappend="${req.status.code == 'saved' ? 'status-saved' : 'status-completed'}">
+                    <span th:if="${req.status.code == 'saved'}">⭐ Избранное</span>
+                    <span th:if="${req.status.code == 'completed'}">Сохранено</span>
+                </span>
             </div>
         </div>
         <div class="event-preview">

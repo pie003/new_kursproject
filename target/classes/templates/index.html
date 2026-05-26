@@ -1,22 +1,22 @@
 <!DOCTYPE html>
-<html>
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Сервис «Почему я не сдал вовремя»</title>
+    <title>Сервис «Почему я не сдал вовремя» — НЕ ПАРЬСЯ, ОБЪЯСНИМ!</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
         }
-        
+
         .container {
             max-width: 1200px;
             margin: 0 auto;
@@ -25,43 +25,155 @@
             box-shadow: 0 20px 40px rgba(0,0,0,0.1);
             overflow: hidden;
         }
-        
+
         header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             padding: 30px;
             text-align: center;
+            position: relative;
         }
-        
+
         header h1 {
             font-size: 28px;
             margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
         }
-        
+
+        .user-info-header {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .user-info-header span {
+            color: white;
+            font-size: 14px;
+        }
+
+        .btn-header {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .btn-header:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
         .main-content {
             padding: 30px;
         }
-        
-        /* Стили для картинки-мема */
-        .meme-container {
+
+        /* Всратый телемагазин-блок */
+        .telemarket {
+            background: linear-gradient(135deg, #ffe6b3 0%, #ffcc66 100%);
+            border: 5px double #ff6600;
+            border-radius: 30px;
+            padding: 20px;
+            margin-bottom: 30px;
             text-align: center;
-            margin-bottom: 25px;
+            animation: blink 1s infinite;
+            box-shadow: 0 0 20px rgba(255,102,0,0.5);
         }
-        
-        .funny-meme {
-            max-width: 100%;
-            max-height: 200px;
-            border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-            transition: transform 0.3s;
+        @keyframes blink {
+            0% { border-color: #ff3300; }
+            50% { border-color: #ffff00; }
+            100% { border-color: #ff3300; }
+        }
+        .telemarket h2 {
+            font-size: 28px;
+            font-weight: bold;
+            color: #cc0000;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 15px;
+            background: yellow;
+            display: inline-block;
+            padding: 5px 20px;
+            border-radius: 50px;
+            transform: rotate(-2deg);
+        }
+        .telemarket-features {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        .tele-item {
+            background: white;
+            border-radius: 20px;
+            padding: 15px;
+            width: 200px;
+            box-shadow: 0 0 0 4px #ff9900, 0 0 0 8px #ffff00;
+            transform: rotate(1deg);
+            transition: all 0.2s;
+        }
+        .tele-item:nth-child(even) {
+            transform: rotate(-1deg);
+        }
+        .tele-item:hover {
+            transform: scale(1.05) rotate(0deg);
+            background: #fffacd;
+        }
+        .tele-item .icon {
+            font-size: 48px;
+            display: block;
+        }
+        .tele-item h3 {
+            font-size: 20px;
+            color: #b45f06;
+            margin: 10px 0;
+            text-transform: uppercase;
+            font-weight: bold;
+            text-decoration: underline;
+        }
+        .tele-item p {
+            font-size: 14px;
+            color: #333;
+            font-style: italic;
+        }
+        .telemarket .btn-buy {
+            background: red;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            padding: 10px 30px;
+            border: none;
+            border-radius: 40px;
             cursor: pointer;
+            animation: pulse 0.5s infinite;
+            margin-top: 15px;
+            display: inline-block;
+            text-decoration: none;
         }
-        
-        .funny-meme:hover {
-            transform: scale(1.02);
+        @keyframes pulse {
+            0% { transform: scale(1); background: red; }
+            100% { transform: scale(1.05); background: darkred; }
         }
-        
-        /* Демо-секция */
+        .telemarket .btn-buy:hover {
+            animation: none;
+            background: #cc0000;
+        }
+        .price-tag {
+            font-size: 22px;
+            font-weight: bold;
+            background: black;
+            color: yellow;
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            margin: 10px 0;
+        }
+
+        /* Демо-секция (оставляем как есть) */
         .demo-section {
             background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
             border-radius: 15px;
@@ -69,7 +181,6 @@
             margin-bottom: 30px;
             border: 2px solid #f59e0b;
         }
-        
         .demo-title {
             display: flex;
             align-items: center;
@@ -77,16 +188,13 @@
             margin-bottom: 20px;
             flex-wrap: wrap;
         }
-        
         .demo-title span {
             font-size: 24px;
         }
-        
         .demo-title h2 {
             color: #92400e;
             font-size: 20px;
         }
-        
         .demo-badge {
             background: #f59e0b;
             color: white;
@@ -95,19 +203,16 @@
             font-size: 12px;
             font-weight: bold;
         }
-        
         .demo-form {
             display: flex;
             flex-wrap: wrap;
             gap: 15px;
             align-items: flex-end;
         }
-        
         .demo-form-group {
             flex: 1;
             min-width: 160px;
         }
-        
         .demo-form-group label {
             display: block;
             font-size: 12px;
@@ -115,7 +220,6 @@
             margin-bottom: 5px;
             font-weight: bold;
         }
-        
         .demo-form-group select,
         .demo-form-group input {
             width: 100%;
@@ -125,7 +229,6 @@
             background: white;
             font-size: 14px;
         }
-        
         .demo-form button {
             background: #f59e0b;
             color: white;
@@ -137,12 +240,10 @@
             cursor: pointer;
             transition: all 0.3s;
         }
-        
         .demo-form button:hover {
             background: #d97706;
             transform: translateY(-2px);
         }
-        
         .demo-result {
             margin-top: 20px;
             padding: 20px;
@@ -150,27 +251,24 @@
             border-radius: 10px;
             border-left: 4px solid #f59e0b;
         }
-        
         .demo-note {
             margin-top: 15px;
             font-size: 12px;
             color: #92400e;
             text-align: center;
         }
-        
         .demo-note a {
             color: #d97706;
             text-decoration: none;
         }
-        
-        /* Секция входа/регистрации */
+
         .auth-buttons {
             text-align: center;
             margin-bottom: 30px;
             padding-bottom: 20px;
             border-bottom: 1px solid #eee;
         }
-        
+
         .btn {
             display: inline-block;
             padding: 12px 25px;
@@ -180,58 +278,35 @@
             font-weight: bold;
             transition: all 0.3s;
         }
-        
         .btn-primary {
             background: #667eea;
             color: white;
         }
-        
         .btn-primary:hover {
             background: #5a67d8;
             transform: translateY(-2px);
         }
-        
         .btn-secondary {
             background: #48bb78;
             color: white;
         }
-        
         .btn-secondary:hover {
             background: #38a169;
             transform: translateY(-2px);
         }
-        
-        /* Особенности сервиса */
-        .features {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-top: 30px;
-        }
-        
-        .feature {
+
+        .meme-container {
             text-align: center;
-            padding: 20px;
-            background: #f9f9f9;
-            border-radius: 10px;
-            transition: all 0.3s;
+            margin-bottom: 20px;
         }
-        
-        .feature:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        .funny-meme {
+            max-width: 100%;
+            max-height: 180px;
+            border-radius: 20px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            border: 3px solid gold;
         }
-        
-        .feature-icon {
-            font-size: 40px;
-            margin-bottom: 10px;
-        }
-        
-        .feature h3 {
-            color: #667eea;
-            font-size: 16px;
-        }
-        
+
         footer {
             text-align: center;
             padding: 20px;
@@ -239,118 +314,110 @@
             color: #666;
             font-size: 12px;
         }
-        
-        @media (max-width: 768px) {
-            .demo-form {
-                flex-direction: column;
-            }
-            .demo-form-group {
-                width: 100%;
-            }
-            .auth-buttons .btn {
-                display: block;
-                margin: 10px auto;
-                max-width: 200px;
-            }
-        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>📝 Сервис «Почему я не сдал вовремя»</h1>
-            <p>Помогаем красиво объяснить любую оплошность</p>
-        </header>
-        
-        <div class="main-content">
-            
-            <!-- КАРТИНКА-МЕМ -->
-            <div class="meme-container">
-                <img src="/images/123.jpg" alt="Забавный мем" class="funny-meme" 
-                     onerror="this.src='https://placehold.co/600x200/667eea/white?text=Мем+не+загрузился'">
+<div class="container">
+    <header>
+        <h1>📢 «ПОЧЕМУ Я НЕ СДАЛ ВОВРЕМЯ» — ЭКСТРЕННАЯ ПОМОЩЬ СТУДЕНТАМ!</h1>
+        <p>Спаси свою сессию без нервотрёпки!</p>
+        <div th:if="${userEmail}" class="user-info-header">
+            <span>👋 Здравствуйте, <span th:text="${userEmail}"></span></span>
+            <a href="/dashboard" class="btn-header">Личный кабинет</a>
+        </div>
+    </header>
+
+    <div class="main-content">
+        <!-- Картинка-мем -->
+        <div class="meme-container">
+            <img src="/images/123.jpg" alt="Мем" class="funny-meme"
+                 onerror="this.src='https://placehold.co/600x200/667eea/white?text=ТОЛЬКО+СЕГОДНЯ+СКИДКА'">
+        </div>
+
+        <!-- Демо-секция -->
+        <div class="demo-section">
+            <div class="demo-title">
+                <span>🎮</span>
+                <h2>Попробуйте прямо сейчас!</h2>
+                <span class="demo-badge">Бесплатно без регистрации</span>
             </div>
-            
-            <!-- Демо-секция на главной странице -->
-            <div class="demo-section">
-                <div class="demo-title">
-                    <span>🎮</span>
-                    <h2>Попробуйте прямо сейчас!</h2>
-                    <span class="demo-badge">Без регистрации</span>
+            <form class="demo-form" action="/demo-generate" method="post">
+                <div class="demo-form-group">
+                    <label>📌 Тип события</label>
+                    <select name="eventType" required>
+                        <option th:each="e : ${eventTypes}" th:value="${e.code}" th:text="${e.displayName}"></option>
+                    </select>
                 </div>
-                
-                <form class="demo-form" action="/demo-generate" method="post">
-                    <div class="demo-form-group">
-                        <label>📌 Тип события</label>
-                        <select name="eventType">
-                            <option value="MISSED_DEADLINE">Пропуск дедлайна</option>
-                            <option value="TECHNICAL_ISSUE">Технические проблемы</option>
-                            <option value="HEALTH_ISSUES">Проблемы со здоровьем</option>
-                            <option value="FAMILY_REASONS">Семейные обстоятельства</option>
-                        </select>
-                    </div>
-                    <div class="demo-form-group">
-                        <label>👤 Адресат</label>
-                        <input type="text" name="recipient" value="Уважаемый преподаватель">
-                    </div>
-                    <div class="demo-form-group">
-                        <label>🎭 Тон</label>
-                        <select name="tone">
-                            <option value="NEUTRAL">Нейтральный</option>
-                            <option value="APOLOGETIC">Извиняющийся</option>
-                            <option value="CONSTRUCTIVE">Конструктивный</option>
-                        </select>
-                    </div>
-                    <div class="demo-form-group">
-                        <label>📊 Формальность</label>
-                        <select name="formality">
-                            <option value="MEDIUM">Средний</option>
-                            <option value="FORMAL">Официальный</option>
-                        </select>
-                    </div>
-                    <div class="demo-form-group">
-                        <button type="submit">✨ Сгенерировать</button>
-                    </div>
-                </form>
-                
-                <div class="demo-result" th:utext="${demoText}">
-                    <p style="color: #999;">Настройте параметры и нажмите «Сгенерировать»</p>
+                <div class="demo-form-group">
+                    <label>👤 Адресат</label>
+                    <input type="text" name="recipient" value="Уважаемый преподаватель" required>
                 </div>
-                
-                <div class="demo-note">
-                    💡 Это демо-версия. <a href="/register">Зарегистрируйтесь</a>, чтобы сохранять результаты и получить доступ ко всем функциям!
+                <div class="demo-form-group">
+                    <label>📊 Степень формальности</label>
+                    <select name="formalityLevel" required>
+                        <option th:each="f : ${formalityLevels}" th:value="${f.code}" th:text="${f.displayName}"></option>
+                    </select>
                 </div>
+                <div class="demo-form-group">
+                    <button type="submit">✨ Генерировать</button>
+                </div>
+            </form>
+            <div class="demo-result" th:utext="${demoText}">
+                <p style="color: #999;">Настройте параметры и нажмите «Сгенерировать»</p>
             </div>
-            
-            <!-- Кнопки входа/регистрации -->
-            <div class="auth-buttons">
-                <a href="/login" class="btn btn-primary">🔐 Вход</a>
-                <a href="/register" class="btn btn-secondary">📝 Регистрация</a>
-            </div>
-            
-            <!-- Особенности сервиса -->
-            <div class="features">
-                <div class="feature">
-                    <div class="feature-icon">🎯</div>
-                    <h3>8 типов событий</h3>
-                </div>
-                <div class="feature">
-                    <div class="feature-icon">🎭</div>
-                    <h3>6 стилей тона</h3>
-                </div>
-                <div class="feature">
-                    <div class="feature-icon">⚡</div>
-                    <h3>4 уровня срочности</h3>
-                </div>
-                <div class="feature">
-                    <div class="feature-icon">💾</div>
-                    <h3>Сохранение результатов</h3>
-                </div>
+            <div class="demo-note">
+                💡 Это демо-версия. <a href="/register">Зарегистрируйтесь</a>, чтобы сохранять результаты!
             </div>
         </div>
-        
-        <footer>
-            <p>© 2026 Сервис «Почему я не сдал вовремя» | Помогаем студентам красиво объяснять любые ситуации</p>
-        </footer>
+
+        <!-- ТЕЛЕМАГАЗИННЫЙ БЛОК (всрато) -->
+        <div class="telemarket">
+            <h2>🔥 ТОЛЬКО СЕЙЧАС! УНИКАЛЬНОЕ ПРЕДЛОЖЕНИЕ! 🔥</h2>
+            <div class="telemarket-features">
+                <div class="tele-item">
+                    <span class="icon">🧠</span>
+                    <h3>ИСКУССТВЕННЫЙ ИНТЕЛЛЕКТ</h3>
+                    <p>Нейросеть от Сбера!<br>Самая мощная технология!</p>
+                </div>
+                <div class="tele-item">
+                    <span class="icon">⚡</span>
+                    <h3>МГНОВЕННО</h3>
+                    <p>5 секунд — и письмо готово!<br>Никаких задержек!</p>
+                </div>
+                <div class="tele-item">
+                    <span class="icon">🎓</span>
+                    <h3>ПРЕПОДЫ В ШОКЕ</h3>
+                    <p>100% убедительность!<br>Они поверят всему!</p>
+                </div>
+                <div class="tele-item">
+                    <span class="icon">💸</span>
+                    <h3>ЭКОНОМИЯ БЮДЖЕТА</h3>
+                    <p>Не плати репетиторам!<br>Не покупай курсовые!</p>
+                </div>
+            </div>
+            <div class="price-tag">🔥 СЕГОДНЯ ЗА 0 РУБЛЕЙ! 🔥</div>
+            <div style="margin: 15px 0; font-size: 18px; font-weight: bold; background: white; display: inline-block; padding: 5px 15px; border-radius: 20px;">
+                🎁 При регистрации подарок: шаблон объяснения "Я заболел" 🎁
+            </div>
+            <div>
+                <a href="/register" class="btn-buy">📢 ЗАРЕГИСТРИРОВАТЬСЯ ПРЯМО СЕЙЧАС! 📢</a>
+            </div>
+            <p style="margin-top: 15px; font-size: 10px; color: #555;">*Акция действует только для умных и отчаявшихся студентов. Количество мест ограничено фантазией разработчика.</p>
+        </div>
+
+        <!-- Кнопки входа/регистрации (дублируются, но пусть будут) -->
+        <div class="auth-buttons" th:unless="${userEmail}">
+            <a href="/login" class="btn btn-primary">🔐 Вход в аккаунт</a>
+            <a href="/register" class="btn btn-secondary">📝 СРОЧНАЯ РЕГИСТРАЦИЯ</a>
+        </div>
+
+        <!-- Нет никаких "особенностей" в обычном стиле – их заменил телемагазин -->
     </div>
+
+    <footer>
+        <p>© 2026 Сервис «Почему я не сдал вовремя» — Не дай себе провалить сессию!</p>
+        <p>⚠️ Внимание! Результаты работы нейросети не гарантируют сдачу экзамена. Используйте на свой страх и риск.</p>
+    </footer>
+</div>
 </body>
 </html>

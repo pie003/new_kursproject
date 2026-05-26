@@ -116,5 +116,29 @@ public class UserRepository {
         }
         return Optional.empty();
     }
+    
+    public void changePassword(Long userId, String newPassword) throws SQLException {
+        String hashed = BCrypt.hashpw(newPassword, BCrypt.gensalt(12));
+        String sql = "UPDATE excuse_generator.users SET password_hash = ? WHERE id = ?";
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, hashed);
+            stmt.setLong(2, userId);
+            stmt.executeUpdate();
+        }
+    }
+
+    public void updateProfile(Long userId, String firstName, String lastName, String group, String gender) throws SQLException {
+        String sql = "UPDATE excuse_generator.users SET first_name = ?, last_name = ?, study_group = ?, gender = ? WHERE id = ?";
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, firstName);
+            stmt.setString(2, lastName);
+            stmt.setString(3, group);
+            stmt.setString(4, gender);
+            stmt.setLong(5, userId);
+            stmt.executeUpdate();
+        }
+    }
 }
 

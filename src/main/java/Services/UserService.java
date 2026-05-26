@@ -44,4 +44,12 @@ public class UserService {
     public Optional<User> getUserById(Long id) throws SQLException {
         return userRepository.findById(id);
     }
+    
+    public void changePassword(Long userId, String newPassword) throws SQLException {
+        userRepository.changePassword(userId, newPassword);
+    }
+
+    public void updateProfile(Long userId, String firstName, String lastName, String group, String gender) throws SQLException {
+        userRepository.updateProfile(userId, firstName, lastName, group, gender);
+    }
 }

@@ -32,7 +32,7 @@
         .header p { font-size: 14px; opacity: 0.9; }
         .main-content { padding: 30px; }
         .meme-container { text-align: center; margin-bottom: 20px; }
-        .funny-meme { max-width: 100%; max-height: 120px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .funny-meme { max-width: 100%; max-height: 120px; border-radius: 15px; }
         .form-group { margin-bottom: 18px; }
         .form-group label { display: block; margin-bottom: 8px; font-weight: bold; color: #333; font-size: 14px; }
         .form-group input, .form-group select {
@@ -42,7 +42,6 @@
             border-radius: 10px;
             font-size: 14px;
             transition: all 0.3s;
-            font-family: inherit;
         }
         .form-group input:focus, .form-group select:focus {
             outline: none;
@@ -92,21 +91,21 @@
         <form action="/register" method="post">
             <div class="form-group">
                 <label>📧 Email</label>
-                <input type="email" name="email" placeholder="student@university.edu" required>
+                <input type="email" name="email" maxlength="100" placeholder="student@university.edu" required>
             </div>
             <div class="row-2cols">
                 <div class="form-group">
                     <label>👤 Имя</label>
-                    <input type="text" name="firstName" placeholder="Иван" required>
+                    <input type="text" name="firstName" maxlength="100" placeholder="Иван" required>
                 </div>
                 <div class="form-group">
                     <label>👤 Фамилия</label>
-                    <input type="text" name="lastName" placeholder="Иванов" required>
+                    <input type="text" name="lastName" maxlength="100" placeholder="Иванов" required>
                 </div>
             </div>
             <div class="form-group">
                 <label>📚 Группа</label>
-                <input type="text" name="group" placeholder="ИВТ-31" required>
+                <input type="text" name="group" maxlength="50" placeholder="ИВТ-31" required>
             </div>
             <div class="form-group">
                 <label>👤 Пол</label>
@@ -119,11 +118,12 @@
             </div>
             <div class="form-group">
                 <label>🔒 Пароль</label>
-                <input type="password" name="password" placeholder="Минимум 6 символов" required>
+                <input type="password" name="password" minlength="6" maxlength="100" placeholder="Минимум 6 символов" required>
+                <small>Пароль должен содержать минимум 6 символов</small>
             </div>
             <div class="form-group">
                 <label>🔑 Подтверждение пароля</label>
-                <input type="password" name="confirmPassword" placeholder="Повторите пароль" required>
+                <input type="password" name="confirmPassword" maxlength="100" placeholder="Повторите пароль" required>
             </div>
             <button type="submit" class="btn-register">Зарегистрироваться</button>
         </form>

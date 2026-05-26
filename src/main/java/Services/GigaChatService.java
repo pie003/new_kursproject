@@ -13,7 +13,9 @@ import okhttp3.*;
 import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
+import main_object.Excuse.EventType;
 import main_object.Excuse.ExcuseParams;
+import main_object.Excuse.FormalityLevel;
 import main_object.User.User;
 
 @Service
@@ -164,6 +166,38 @@ public class GigaChatService {
             params.getCustomDetails() != null ? params.getCustomDetails() : "нет",
             firstName, lastName
         );
+    }
+    
+    private String buildDemoPrompt(String eventType, String recipient, String formalityLevel) {
+        String eventRu = EventType.fromCode(eventType).getDisplayName();
+        String formalityRu = FormalityLevel.fromCode(formalityLevel).getDisplayName();
+
+        return String.format("""
+            Напиши объяснительное письмо от имени студента преподавателю.
+
+            Адресат: %s
+            Что случилось: %s
+            Степень формальности: %s
+
+            Требования:
+            - Письмо должно быть вежливым и грамотным.
+            - Объясни причину несдачи работы.
+            - Принеси извинения.
+            - Пообещай исправиться.
+            - **НЕ ПРИДУМЫВАЙ** вымышленных деталей (например, название предмета, название работы).
+            - Сделай объяснение максимально универсальным, чтобы оно подошло под наибольшее количество ситуаций                 
+            """,
+            recipient, eventRu, formalityRu);
+    }
+    
+    public String generateDemo(String eventType, String recipient, String formalityLevel) {
+        String prompt = buildDemoPrompt(eventType, recipient, formalityLevel);
+        try {
+            return sendPrompt(prompt);
+        } catch (Exception e) {
+            System.err.println("Demo generation error: " + e.getMessage());
+            return getFallbackResponse();
+        }
     }
     
     private String getFallbackResponse() {
