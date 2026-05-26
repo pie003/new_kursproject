@@ -16,6 +16,7 @@ main_object\Request\GenerationRequestFactory.class
 main_object\Excuse\Urgency.class
 main_object\Request\RequestStatus.class
 new_project\mew_project\LogManager.class
+main_object\Excuse\Length.class
 Services\GigaChatService.class
 main_object\Excuse\FormalityLevel.class
 Services\UserService.class

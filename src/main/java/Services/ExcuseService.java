@@ -11,12 +11,13 @@ package Services;
 import db.ExcuseParamsRepository;
 import db.GenerationRequestRepository;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import main_object.Excuse.ExcuseParams;
 import main_object.Request.GenerationRequest;
-import main_object.Request.GenerationRequestFactory;
 import main_object.Request.RequestStatus;
+import main_object.User.User;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -26,63 +27,84 @@ public class ExcuseService {
     private final GigaChatService gigaChatService = new GigaChatService();
     
     // Создание нового запроса
-    public GenerationRequest createRequest(Long userId, ExcuseParams params) throws SQLException {
+    public GenerationRequest createOrUpdateRequest(Long userId, ExcuseParams params, Long existingRequestId) throws SQLException {
+        if (existingRequestId != null) {
+            Optional<GenerationRequest> existing = requestRepository.findById(existingRequestId);
+            if (existing.isPresent() && existing.get().getUserId().equals(userId)) {
+                GenerationRequest req = existing.get();
+                // Обновляем параметры
+                ExcuseParams savedParams = paramsRepository.save(params); // сохраняем (если новые) или можно обновить
+                req.setParams(savedParams);
+                req.setUpdatedAt(LocalDateTime.now());
+                req.setStatus(RequestStatus.DRAFT);
+                return requestRepository.update(req);
+            }
+        }
+        // Создаём новый
         ExcuseParams savedParams = paramsRepository.save(params);
-        params.setId(savedParams.getId());
-        
-        GenerationRequest request = GenerationRequestFactory.createNewRequest(userId, params);
-        return requestRepository.save(request);
-    }
-
-    // Сохранение сгенерированного текста
-    public GenerationRequest saveGeneratedText(Long requestId, String generatedText) throws SQLException {
-        Optional<GenerationRequest> requestOpt = requestRepository.findById(requestId);
-        if (requestOpt.isEmpty()) {
-            throw new RuntimeException("Запрос не найден");
-        }
-        GenerationRequest request = requestOpt.get();
-        request.setGeneratedText(generatedText);
-        request.setStatus(RequestStatus.SUCCESS);
-        return requestRepository.update(request);
+        GenerationRequest newReq = new GenerationRequest();
+        newReq.setUserId(userId);
+        newReq.setParams(savedParams);
+        newReq.setStatus(RequestStatus.DRAFT);
+        newReq.setCreatedAt(LocalDateTime.now());
+        newReq.setUpdatedAt(LocalDateTime.now());
+        newReq.setSaved(false);
+        return requestRepository.save(newReq);
     }
     
-    // Отметить как сохранённый (в избранное)
-    public GenerationRequest markAsSaved(Long requestId) throws SQLException {
-        Optional<GenerationRequest> requestOpt = requestRepository.findById(requestId);
-        if (requestOpt.isEmpty()) {
-            throw new RuntimeException("Запрос не найден");
-        }
-        GenerationRequest request = requestOpt.get();
-        request.setSaved(true);
-        return requestRepository.update(request);
+    public Optional<GenerationRequest> getCurrentDraft(Long userId) throws SQLException {
+        return requestRepository.findCurrentDraft(userId);
     }
     
-    // История всех запросов пользователя
+    public void saveGeneratedText(Long requestId, String text) throws SQLException {
+        Optional<GenerationRequest> opt = requestRepository.findById(requestId);
+        if (opt.isPresent()) {
+            GenerationRequest req = opt.get();
+            req.setGeneratedText(text);
+            req.setUpdatedAt(LocalDateTime.now());
+            req.setStatus(RequestStatus.DRAFT);
+            requestRepository.update(req);
+        }
+    }
+    
+    public void markAsSaved(Long requestId) throws SQLException {
+        Optional<GenerationRequest> opt = requestRepository.findById(requestId);
+        if (opt.isPresent()) {
+            GenerationRequest req = opt.get();
+            req.setStatus(RequestStatus.SAVED);
+            req.setSaved(true);
+            requestRepository.update(req);
+        }
+    }
+    
+    public String generateText(ExcuseParams params, User user) {
+        String prompt = gigaChatService.buildPrompt(params, user);
+        return gigaChatService.sendPrompt(prompt);
+    }
+    
     public List<GenerationRequest> getUserHistory(Long userId) throws SQLException {
         return requestRepository.findByUserId(userId);
     }
     
-    // Сохранённые запросы пользователя
     public List<GenerationRequest> getUserSavedRequests(Long userId) throws SQLException {
         return requestRepository.findSavedByUserId(userId);
     }
     
-    // Получить запрос по ID
-    public Optional<GenerationRequest> getRequestById(Long id) throws SQLException {
-        return requestRepository.findById(id);
+    public void markAsCompleted(Long requestId) throws SQLException {
+        Optional<GenerationRequest> opt = requestRepository.findById(requestId);
+        if (opt.isPresent()) {
+            GenerationRequest req = opt.get();
+            req.setStatus(RequestStatus.COMPLETED);
+            req.setSaved(true);
+            requestRepository.update(req);
+        }
     }
     
-    public String generateText(ExcuseParams params) {
-        String prompt = gigaChatService.buildPrompt(
-            params.getEventType().getDisplayName(),
-            params.getRecipient(),
-            params.getFormalityLevel().getDisplayName(),
-            params.getUrgency().getDisplayName(),
-            params.getTone().getDisplayName(),
-            params.isSelfIronyAllowed(),
-            params.getCustomDetails()
-        );
-        
-        return gigaChatService.sendPrompt(prompt);
+    public List<GenerationRequest> getUserRequestsWithFilters(Long userId, List<String> statuses, String search) throws SQLException {
+        return requestRepository.findWithFilters(userId, statuses, search);
+    }
+    
+    public Optional<GenerationRequest> getRequestById(Long id) throws SQLException {
+        return requestRepository.findById(id);
     }
 }

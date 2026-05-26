@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Детали запроса</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+        }
+        .param-block {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+        .generated-text {
+            background: #f0f4ff;
+            padding: 20px;
+            border-radius: 10px;
+            white-space: pre-wrap;
+        }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #667eea;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <a href="/requests" class="back-link">← Назад к списку</a>
+    <h1>📄 Детали запроса</h1>
+    <div th:if="${request}">
+        <div class="param-block">
+            <p><strong>Статус:</strong> <span th:text="${request.status.displayName}"></span></p>
+            <p><strong>Создан:</strong> <span th:text="${#temporals.format(request.createdAt, 'dd.MM.yyyy HH:mm')}"></span></p>
+            <p><strong>Обновлён:</strong> <span th:text="${#temporals.format(request.updatedAt, 'dd.MM.yyyy HH:mm')}"></span></p>
+        </div>
+        <div class="param-block">
+            <h3>Параметры запроса</h3>
+            <p><strong>Адресат:</strong> <span th:text="${request.params.recipient}"></span></p>
+            <p><strong>Что случилось:</strong> <span th:text="${request.params.eventDescription}"></span></p>
+            <p><strong>Чего хочет добиться:</strong> <span th:text="${request.params.desiredAction}"></span></p>
+            <p><strong>Степень формальности:</strong> <span th:text="${request.params.formalityLevel}"></span></p>
+            <p><strong>Срочность:</strong> <span th:text="${request.params.urgency}"></span></p>
+            <p><strong>Тон:</strong> <span th:text="${request.params.tone}"></span></p>
+            <p><strong>Размер:</strong> <span th:text="${request.params.length}"></span></p>
+            <p><strong>Самоирония разрешена:</strong> <span th:if="${request.params.selfIronyAllowed}">Да</span><span th:unless="${request.params.selfIronyAllowed}">Нет</span></p>
+            <p><strong>Доп. детали:</strong> <span th:text="${request.params.customDetails}"></span></p>
+        </div>
+        <div class="param-block">
+            <h3>Сгенерированный текст</h3>
+            <div class="generated-text" th:utext="${request.generatedText}"></div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

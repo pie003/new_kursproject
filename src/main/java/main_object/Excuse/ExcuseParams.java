@@ -18,24 +18,40 @@ public class ExcuseParams {
     private String recipient;                 
     private FormalityLevel formalityLevel;    
     private Urgency urgency;                  
-    private Tone tone;                       
+    private Tone tone;       
+    private String eventDescription;
+    private String desiredAction;      
+    private Length length;            
     private boolean selfIronyAllowed;         
     
-    private String customDetails;             
-    private String preferredLength;          
-    private boolean includeSuggestions;       
-    private Map<String, String> metadata;     
+    private String customDetails;            
     
     private LocalDateTime lastModified;
     
     public ExcuseParams() {}
+
+    public String getDesiredAction() { 
+        return desiredAction; 
+    }
     
-    public boolean isValid() {
-      return eventType != null && 
-             recipient != null && !recipient.trim().isEmpty() &&
-             formalityLevel != null &&
-             urgency != null &&
-             tone != null;
+    public void setDesiredAction(String desiredAction) { 
+        this.desiredAction = desiredAction; 
+    }
+    
+    public Length getLength() { 
+        return length; 
+    }
+    
+    public void setLength(Length length) { 
+        this.length = length; 
+    }
+   
+    public String getEventDescription() { 
+        return eventDescription; 
+    }
+    
+    public void setEventDescription(String eventDescription) { 
+        this.eventDescription = eventDescription; 
     }
     
     public long getId() {
@@ -108,34 +124,7 @@ public class ExcuseParams {
     public void setCustomDetails(String customDetails) {
         this.customDetails = customDetails;
         updateLastModified();
-    }
-    
-    public String getPreferredLength() {
-        return preferredLength;
-    }
-    
-    public void setPreferredLength(String preferredLength) {
-        this.preferredLength = preferredLength;
-        updateLastModified();
-    }
-    
-    public boolean isIncludeSuggestions() {
-        return includeSuggestions;
-    }
-    
-    public void setIncludeSuggestions(boolean includeSuggestions) {
-        this.includeSuggestions = includeSuggestions;
-        updateLastModified();
-    }
-    
-    public Map<String, String> getMetadata() {
-        return metadata;
-    }
-    
-    public void setMetadata(Map<String, String> metadata) {
-        this.metadata = metadata;
-        updateLastModified();
-    }
+    }    
     
     public LocalDateTime getLastModified() {
         return lastModified;

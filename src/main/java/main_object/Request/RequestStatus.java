@@ -9,43 +9,26 @@ package main_object.Request;
  * @author Ирина
  */
 public enum RequestStatus {
-    PENDING("pending", "Обработка", "Запрос обрабатывается"),
-    SUCCESS("success", "Готово", "Текст успешно сгенерирован"),
-    FAILED("failed", "Ошибка", "Произошла ошибка при генерации"),
-    RETRY("retry", "Повтор", "Требуется повторная попытка");
+    DRAFT("draft", "Черновик"),
+    COMPLETED("completed", "Завершено"),
+    SAVED("saved", "Сохранено"),
+    FAILED("failed", "Ошибка");
     
     private final String code;
-    private final String icon;
-    private final String description;
+    private final String displayName;
     
-    RequestStatus(String code, String icon, String description) {
+    RequestStatus(String code, String displayName) {
         this.code = code;
-        this.icon = icon;
-        this.description = description;
+        this.displayName = displayName;
     }
     
-    public String getCode() {
-        return code;
-    }
-    
-    public String getIcon() {
-        return icon;
-    }
-    
-    public String getDescription() {
-        return description;
-    }  
+    public String getCode() { return code; }
+    public String getDisplayName() { return displayName; }
     
     public static RequestStatus fromCode(String code) {
-        if (code == null) {
-            return PENDING;
+        for (RequestStatus s : values()) {
+            if (s.code.equalsIgnoreCase(code)) return s;
         }
-        
-        for (RequestStatus tone : values()) {
-            if (tone.code.equalsIgnoreCase(code)) {
-                return tone;
-            }
-        }
-        return PENDING;
+        return DRAFT;
     }
 }

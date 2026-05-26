@@ -38,14 +38,15 @@ public class UserRepository {
         return Optional.empty();
     }
     
-    public User register(String email, String rawPassword) throws SQLException {
+    public User register(String email, String rawPassword, String first_name, String last_name, String group, String gender) throws SQLException {
         if (findByEmail(email).isPresent()) {
             throw new SQLException("User already exists");
         }
         
         String passwordHash = BCrypt.hashpw(rawPassword, BCrypt.gensalt(12));
         
-        String sql = "INSERT INTO excuse_generator.users (email, password_hash, role, created_at) VALUES (?, ?, ?, ?) RETURNING id";
+        String sql = "INSERT INTO excuse_generator.users (email, password_hash, role, created_at, first_name, last_name, study_group, gender) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING id";
         
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -54,10 +55,14 @@ public class UserRepository {
             stmt.setString(2, passwordHash);
             stmt.setString(3, "student");
             stmt.setTimestamp(4, Timestamp.valueOf(LocalDateTime.now()));
+            stmt.setString(5, first_name);
+            stmt.setString(6, last_name);
+            stmt.setString(7, group);
+            stmt.setString(8, gender);
             
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    return UserFactory.createNewUser(email, passwordHash);
+                    return UserFactory.createNewUser(email, passwordHash, first_name, last_name, group, gender);
                 }
             }
         }
@@ -96,6 +101,20 @@ public class UserRepository {
             stmt.setLong(2, userId);
             stmt.executeUpdate();
         }
+    }
+    
+    public Optional<User> findById(Long id) throws SQLException {
+        String sql = "SELECT * FROM excuse_generator.users WHERE id = ? AND is_active = true";
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setLong(1, id);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return Optional.of(UserFactory.createFromResultSet(rs));
+                }
+            }
+        }
+        return Optional.empty();
     }
 }
 

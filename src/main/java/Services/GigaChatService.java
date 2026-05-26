@@ -13,7 +13,8 @@ import okhttp3.*;
 import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
-import org.springframework.beans.factory.annotation.Value;
+import main_object.Excuse.ExcuseParams;
+import main_object.User.User;
 
 @Service
 public class GigaChatService {
@@ -113,32 +114,56 @@ public class GigaChatService {
         }
     }
     
-    public String buildPrompt(String eventType, String recipient, String formalityLevel, 
-                               String urgency, String tone, boolean selfIronyAllowed, 
-                               String customDetails) {
+    public String buildPrompt(ExcuseParams params, User user) {
+        String gender = user.getGender();
+        String firstName = user.getFirstName();
+        String lastName = user.getLastName();
+        String group = user.getGroup();
+        String recipient = params.getRecipient();
         
+        String formalityRu = params.getFormalityLevel().getDescription();
+        String urgencyRu = params.getUrgency().getDescription();
+        String toneRu = params.getTone().getDescription();
+        String lengthRu = params.getLength().getDisplayName();
+        
+
         return String.format("""
-            Напиши официальное объяснительное письмо от лица студента преподавателю.
-            
-            Параметры:
-            - Причина: %s
-            - Адресат: %s
-            - Стиль общения: %s
+            Напиши объяснительное письмо от имени %s %s (группа %s). Пол студента: %s.
+
+            Адресат: %s.
+            Ситуация: %s.
+            Чего хочет добиться студент: %s.
+
+            Параметры письма:
+            - Стиль: %s
             - Срочность: %s
             - Тон: %s
-            - Использовать самоиронию: %s
-            - Дополнительная информация: %s
-            
+            - Размер: %s
+            - Самоирония: %s
+            - Дополнительно: %s
+
             Требования:
-            1. Письмо должно быть вежливым и корректным
-            2. Объясни причину несдачи работы
-            3. Принеси извинения
-            4. Пообещай исправить ситуацию в ближайшее время
-            5. Длина текста: 100-200 слов
-            """, 
-            eventType, recipient, formalityLevel, urgency, tone,
-            selfIronyAllowed ? "разрешена" : "запрещена",
-            customDetails != null ? customDetails : "нет");
+            - Пиши от первого лица студента.
+            - Используй грамматические формы, соответствующие указанному полу.
+            - **НЕ ПРИДУМЫВАЙ** дополнительных фактов, которых нет в описании ситуации: не указывай название предмета, номер группы (кроме указанного), конкретные даты, имена других людей.
+            - Если в описании ситуации не сказано, что студент не сдал конкретный предмет, не упоминай название предмета.
+            - Не добавляй отчество, не меняй имя и фамилию.
+            - Учти срочность: если срочность высокая или критическая, начни с извинения за срочность.
+            - Соблюдай выбранный размер текста.
+            - Если самоирония разрешена, можешь добавить лёгкий юмор.
+            - Не добавляй в начало лишних символов
+            - Всегда обращайся к преподавателю на вы, если в дополнительной информации не сказано обратного
+            """,
+            firstName, lastName, group,
+            "MALE".equals(gender) ? "мужской" : ("FEMALE".equals(gender) ? "женский" : "другой"),
+            recipient,
+            params.getEventDescription(),
+            params.getDesiredAction(),
+            formalityRu, urgencyRu, toneRu, lengthRu,
+            params.isSelfIronyAllowed() ? "да" : "нет",
+            params.getCustomDetails() != null ? params.getCustomDetails() : "нет",
+            firstName, lastName
+        );
     }
     
     private String getFallbackResponse() {

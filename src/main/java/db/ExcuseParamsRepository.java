@@ -8,6 +8,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.Optional;
 import main_object.Excuse.ExcuseFactory;
 import main_object.Excuse.ExcuseParams;
@@ -19,22 +21,26 @@ import main_object.Excuse.ExcuseParams;
 public class ExcuseParamsRepository {
     public ExcuseParams save(ExcuseParams params) throws SQLException {
         String sql = """
-            INSERT INTO excuse_generator.excuse_params 
-            (event_type, recipient, formality_level, urgency, tone, self_irony_allowed, custom_details) 
-            VALUES (?, ?, ?, ?, ?, ?, ?) 
-            RETURNING id
+        INSERT INTO excuse_generator.excuse_params 
+                    (event_description, desired_action, formality_level, urgency, tone, 
+                     self_irony_allowed, custom_details, length, created_at, recipient) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) 
+                    RETURNING id
         """;
         
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
-            stmt.setString(1, params.getEventType().getCode());
-            stmt.setString(2, params.getRecipient());
-            stmt.setString(3, params.getFormalityLevel().getCode());
-            stmt.setString(4, params.getUrgency().getCode());
-            stmt.setString(5, params.getTone().getCode());
-            stmt.setBoolean(6, params.isSelfIronyAllowed());
-            stmt.setString(7, params.getCustomDetails());
+                stmt.setString(1, params.getEventDescription());
+                stmt.setString(2, params.getDesiredAction());
+                stmt.setString(3, params.getFormalityLevel().getCode());
+                stmt.setString(4, params.getUrgency().getCode());
+                stmt.setString(5, params.getTone().getCode());
+                stmt.setBoolean(6, params.isSelfIronyAllowed());
+                stmt.setString(7, params.getCustomDetails());
+                stmt.setString(8, params.getLength().getCode());
+                stmt.setTimestamp(9, Timestamp.valueOf(LocalDateTime.now()));
+                stmt.setString(10, params.getRecipient());
             
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
@@ -48,22 +54,25 @@ public class ExcuseParamsRepository {
     public ExcuseParams update(ExcuseParams params) throws SQLException {
         String sql = """
             UPDATE excuse_generator.excuse_params 
-            SET event_type = ?, recipient = ?, formality_level = ?, 
-                urgency = ?, tone = ?, self_irony_allowed = ?, custom_details = ?
+            SET recipient = ?, formality_level = ?, 
+                urgency = ?, tone = ?, self_irony_allowed = ?, custom_details = ?,
+                event_description = ?, desired_action = ?, length = ?    
             WHERE id = ?
         """;
         
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
-            stmt.setString(1, params.getEventType().getCode());
-            stmt.setString(2, params.getRecipient());
-            stmt.setString(3, params.getFormalityLevel().getCode());
-            stmt.setString(4, params.getUrgency().getCode());
-            stmt.setString(5, params.getTone().getCode());
-            stmt.setBoolean(6, params.isSelfIronyAllowed());
-            stmt.setString(7, params.getCustomDetails());
-            stmt.setLong(8, params.getId());
+            stmt.setString(1, params.getRecipient());
+            stmt.setString(2, params.getFormalityLevel().getCode());
+            stmt.setString(3, params.getUrgency().getCode());
+            stmt.setString(4, params.getTone().getCode());
+            stmt.setBoolean(5, params.isSelfIronyAllowed());
+            stmt.setString(6, params.getCustomDetails());
+            stmt.setString(7, params.getEventDescription());
+            stmt.setString(8, params.getDesiredAction());
+            stmt.setString(9, params.getLength().getCode());
+            stmt.setLong(10, params.getId());
             
             stmt.executeUpdate();
         }

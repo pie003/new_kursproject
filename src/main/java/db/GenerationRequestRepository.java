@@ -22,28 +22,29 @@ import main_object.Request.GenerationRequestFactory;
  */
 public class GenerationRequestRepository {
     public GenerationRequest save(GenerationRequest request) throws SQLException {
+        if (request.getId() == null) return insert(request);
+        else return update(request);
+    }
+    
+    private GenerationRequest insert(GenerationRequest request) throws SQLException {
         String sql = """
             INSERT INTO excuse_generator.requests 
-            (user_id, params_id, generated_text, status, created_at, is_saved, error_message)  
-            VALUES (?, ?, ?, ?, ?, ?, ?) 
+            (user_id, params_id, generated_text, status, created_at, updated_at, is_saved, error_message) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?) 
             RETURNING id
         """;
-        
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
             stmt.setLong(1, request.getUserId());
             stmt.setLong(2, request.getParams().getId());
             stmt.setString(3, request.getGeneratedText());
             stmt.setString(4, request.getStatus().getCode());
-            stmt.setTimestamp(5, Timestamp.valueOf(LocalDateTime.now()));
-            stmt.setBoolean(6, request.isSaved());
-            stmt.setString(7, request.getErrorMessage());
-            
+            stmt.setTimestamp(5, Timestamp.valueOf(request.getCreatedAt()));
+            stmt.setTimestamp(6, Timestamp.valueOf(request.getUpdatedAt()));
+            stmt.setBoolean(7, request.isSaved());
+            stmt.setString(8, request.getErrorMessage());
             try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    request.setId(rs.getLong("id"));
-                }
+                if (rs.next()) request.setId(rs.getLong("id"));
             }
         }
         return request;
@@ -51,20 +52,19 @@ public class GenerationRequestRepository {
     
     public GenerationRequest update(GenerationRequest request) throws SQLException {
         String sql = """
-            UPDATE excuse_generator.requests 
-            SET generated_text = ?, status = ?, is_saved = ?, error_message = ?
+            UPDATE excuse_generator.requests
+            SET params_id = ?, generated_text = ?, status = ?, updated_at = ?, is_saved = ?, error_message = ?
             WHERE id = ?
         """;
-        
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
-            stmt.setString(1, request.getGeneratedText());
-            stmt.setString(2, request.getStatus().getCode());
-            stmt.setBoolean(3, request.isSaved());
-            stmt.setString(4, request.getErrorMessage());
-            stmt.setLong(5, request.getId());
-            
+            stmt.setLong(1, request.getParams().getId());
+            stmt.setString(2, request.getGeneratedText());
+            stmt.setString(3, request.getStatus().getCode());
+            stmt.setTimestamp(4, Timestamp.valueOf(request.getUpdatedAt()));
+            stmt.setBoolean(5, request.isSaved());
+            stmt.setString(6, request.getErrorMessage());
+            stmt.setLong(7, request.getId());
             stmt.executeUpdate();
         }
         return request;
@@ -155,5 +155,56 @@ public class GenerationRequestRepository {
             }
         }
         return requests;
+    }
+    
+    public Optional<GenerationRequest> findCurrentDraft(Long userId) throws SQLException {
+        String sql = "SELECT * FROM excuse_generator.requests WHERE user_id = ? AND status IN ('draft') ORDER BY updated_at DESC LIMIT 1";
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setLong(1, userId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) return Optional.of(GenerationRequestFactory.createFromResultSet(rs));
+            }
+        }
+        return Optional.empty();
+    }
+    
+    public List<GenerationRequest> findWithFilters(Long userId, List<String> statuses, String search) throws SQLException {
+        StringBuilder sql = new StringBuilder("SELECT * FROM excuse_generator.requests WHERE user_id = ?");
+        if (statuses != null && !statuses.isEmpty()) {
+            sql.append(" AND status IN (");
+            for (int i = 0; i < statuses.size(); i++) {
+                sql.append(i == 0 ? "?" : ", ?");
+            }
+            sql.append(")");
+        }
+        if (search != null && !search.trim().isEmpty()) {
+            sql.append(" AND (generated_text ILIKE ? OR params_id IN (SELECT id FROM excuse_generator.excuse_params WHERE event_description ILIKE ? OR desired_action ILIKE ? OR recipient ILIKE ?))");
+        }
+        sql.append(" ORDER BY updated_at DESC");
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql.toString())) {
+            int paramIndex = 1;
+            stmt.setLong(paramIndex++, userId);
+            if (statuses != null && !statuses.isEmpty()) {
+                for (String s : statuses) {
+                    stmt.setString(paramIndex++, s);
+                }
+            }
+            if (search != null && !search.trim().isEmpty()) {
+                String like = "%" + search + "%";
+                stmt.setString(paramIndex++, like);
+                stmt.setString(paramIndex++, like);
+                stmt.setString(paramIndex++, like);
+                stmt.setString(paramIndex++, like);
+            }
+            List<GenerationRequest> list = new ArrayList<>();
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    list.add(GenerationRequestFactory.createFromResultSet(rs));
+                }
+            }
+            return list;
+        }
     }
 }

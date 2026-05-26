@@ -14,6 +14,10 @@ import org.mindrot.jbcrypt.BCrypt;
  */
 public class User {
     private Long id;
+    private String gender;
+    private String firstName;
+    private String lastName;
+    private String group;
     private String email;
     private String passwordHash; 
     private UserRole role;
@@ -23,6 +27,38 @@ public class User {
     
     public User(){}
     
+    public String getGender() { 
+        return gender; 
+    }
+    
+    public void setGender(String gender) { 
+        this.gender = gender; 
+    }
+    
+    public String getFirstName() { 
+        return firstName; 
+    }
+    
+    public void setFirstName(String firstName) { 
+        this.firstName = firstName; 
+    }
+
+    public String getLastName() { 
+        return lastName; 
+    }
+    
+    public void setLastName(String lastName) { 
+        this.lastName = lastName; 
+    }
+
+    public String getGroup() { 
+        return group; 
+    }
+    
+    public void setGroup(String group) { 
+        this.group = group; 
+    }
+
     public void updateLastLogin() {
         this.lastLoginAt = LocalDateTime.now();
     }

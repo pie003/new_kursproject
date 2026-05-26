@@ -16,7 +16,7 @@ public class GenerationRequestFactory {
         GenerationRequest request = new GenerationRequest();
         request.setUserId(userId);
         request.setParams(params);
-        request.setStatus(RequestStatus.PENDING);
+        request.setStatus(RequestStatus.DRAFT);
         request.setCreatedAt(LocalDateTime.now());
         request.setSaved(false);
         return request;

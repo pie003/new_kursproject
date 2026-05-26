@@ -39,14 +39,14 @@ public class GenerationRequest {
         }
         
         this.generatedText = generatedText;
-        this.status = RequestStatus.SUCCESS;
+        this.status = RequestStatus.SAVED;
         this.completedAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
         this.errorMessage = null;
     }
     
     public void saveResult() {
-        if (this.status != RequestStatus.SUCCESS) {
+        if (this.status != RequestStatus.SAVED) {
             throw new IllegalStateException("Cannot save a request that is not successful");
         }
         this.isSaved = true;

@@ -2,21 +2,19 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Создание объяснения - Сервис «Почему я не сдал вовремя»</title>
+    <title>Новое объяснение — Сервис «Почему я не сдал вовремя»</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
         }
-        
         .container {
             max-width: 1200px;
             margin: 0 auto;
@@ -25,25 +23,20 @@
             box-shadow: 0 20px 40px rgba(0,0,0,0.1);
             overflow: hidden;
         }
-        
-        /* Шапка */
         .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             padding: 25px 30px;
             position: relative;
         }
-        
         .header h1 {
             font-size: 24px;
             margin-bottom: 5px;
         }
-        
         .header p {
             font-size: 14px;
             opacity: 0.9;
         }
-        
         .back-link {
             position: absolute;
             top: 25px;
@@ -53,46 +46,33 @@
             background: rgba(255,255,255,0.2);
             padding: 8px 15px;
             border-radius: 20px;
-            font-size: 14px;
-            transition: all 0.3s;
+            transition: 0.3s;
         }
-        
         .back-link:hover {
             background: rgba(255,255,255,0.3);
         }
-        
-        /* Основное содержание */
         .main-content {
             padding: 30px;
         }
-        
-        /* Две колонки */
         .two-columns {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 30px;
         }
-        
-        /* Форма параметров */
         .params-form {
             background: #f8f9fa;
             padding: 25px;
             border-radius: 15px;
         }
-        
         .params-form h3 {
-            color: #333;
             margin-bottom: 20px;
-            font-size: 18px;
             display: flex;
             align-items: center;
             gap: 10px;
         }
-        
         .form-group {
             margin-bottom: 18px;
         }
-        
         .form-group label {
             display: block;
             margin-bottom: 8px;
@@ -100,48 +80,31 @@
             color: #555;
             font-size: 14px;
         }
-        
-        .form-group select,
-        .form-group input,
-        .form-group textarea {
+        .form-group input, .form-group select, .form-group textarea {
             width: 100%;
             padding: 10px 12px;
             border: 2px solid #e0e0e0;
             border-radius: 8px;
-            font-size: 14px;
-            transition: all 0.3s;
             font-family: inherit;
+            font-size: 14px;
         }
-        
-        .form-group select:focus,
-        .form-group input:focus,
-        .form-group textarea:focus {
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
             outline: none;
             border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
         }
-        
         .form-group textarea {
             resize: vertical;
             min-height: 80px;
         }
-        
-        /* Чекбокс */
         .checkbox-group {
             display: flex;
             align-items: center;
             gap: 10px;
         }
-        
         .checkbox-group input {
             width: auto;
         }
-        
-        .checkbox-group label {
-            margin-bottom: 0;
-        }
-        
-        /* Кнопка генерации */
         .generate-btn {
             width: 100%;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -152,31 +115,24 @@
             font-size: 16px;
             font-weight: bold;
             cursor: pointer;
-            transition: all 0.3s;
             margin-top: 10px;
+            transition: 0.3s;
         }
-        
         .generate-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 5px 15px rgba(102,126,234,0.4);
         }
-        
-        /* Результат генерации */
         .result-section {
             background: #f0f4ff;
             padding: 25px;
             border-radius: 15px;
         }
-        
         .result-section h3 {
-            color: #333;
             margin-bottom: 20px;
-            font-size: 18px;
             display: flex;
             align-items: center;
             gap: 10px;
         }
-        
         .generated-text {
             background: white;
             padding: 20px;
@@ -184,15 +140,52 @@
             min-height: 400px;
             border-left: 4px solid #667eea;
             line-height: 1.6;
+            white-space: pre-wrap;
+            font-size: 15px;
         }
-        
         .placeholder {
             color: #999;
             text-align: center;
             padding: 60px 20px;
         }
-        
-        /* Сообщения об ошибках */
+        .action-buttons {
+            margin-top: 20px;
+            text-align: center;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .btn-save, .btn-complete, .btn-copy {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            transition: 0.2s;
+        }
+        .btn-save {
+            background: #48bb78;
+            color: white;
+        }
+        .btn-save:hover {
+            background: #38a169;
+        }
+        .btn-complete {
+            background: #f59e0b;
+            color: white;
+        }
+        .btn-complete:hover {
+            background: #d97706;
+        }
+        .btn-copy {
+            background: #667eea;
+            color: white;
+        }
+        .btn-copy:hover {
+            background: #5a67d8;
+        }
         .error-message {
             background: #fed7d7;
             color: #c53030;
@@ -201,24 +194,15 @@
             margin-bottom: 20px;
             border-left: 4px solid #c53030;
         }
-        
-        /* Адаптивность */
         @media (max-width: 768px) {
             .two-columns {
                 grid-template-columns: 1fr;
                 gap: 20px;
             }
-            
-            .header h1 {
-                font-size: 20px;
-                padding-right: 80px;
-            }
-            
             .back-link {
                 top: 20px;
                 right: 20px;
             }
-            
             .main-content {
                 padding: 20px;
             }
@@ -226,134 +210,113 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>✨ Создание объяснения</h1>
-            <p>Выберите параметры ситуации, и ИИ сгенерирует идеальный текст</p>
-            <a href="/dashboard" class="back-link">← Назад</a>
-        </div>
-        
-        <div class="main-content">
-            <!-- Сообщение об ошибке -->
-            <div th:if="${error}" class="error-message" th:text="${error}"></div>
-            
-            <div class="two-columns">
-                <!-- Левая колонка: форма параметров -->
-                <div class="params-form">
-                    <h3>
-                        <span>⚙️</span>
-                        Настройки генерации
-                    </h3>
-                    
-                    <form action="/generate" method="post" id="generateForm">
-                        <!-- Тип события -->
-                        <div class="form-group">
-                            <label>📌 Тип события</label>
-                            <select name="eventType" required>
-                                <option value="MISSED_DEADLINE">Пропуск дедлайна</option>
-                                <option value="TECHNICAL_ISSUE">Технические проблемы</option>
-                                <option value="HEALTH_ISSUES">Проблемы со здоровьем</option>
-                                <option value="FAMILY_REASONS">Семейные обстоятельства</option>
-                                <option value="WORK_OVERLOAD">Перегрузка на работе</option>
-                                <option value="LOST_FILES">Потеря файлов</option>
-                                <option value="OTHER">Другое</option>
-                            </select>
-                        </div>
-                        
-                        <!-- Адресат -->
-                        <div class="form-group">
-                            <label>👤 Адресат</label>
-                            <input type="text" name="recipient" value="Уважаемый преподаватель" required>
-                        </div>
-                        
-                        <!-- Степень формальности -->
-                        <div class="form-group">
-                            <label>📊 Степень формальности</label>
-                            <select name="formalityLevel" required>
-                                <option value="INFORMAL">Неформальный</option>
-                                <option value="MEDIUM" selected>Средний</option>
-                                <option value="FORMAL">Официальный</option>
-                                <option value="VERY_FORMAL">Максимально официальный</option>
-                            </select>
-                        </div>
-                        
-                        <!-- Срочность -->
-                        <div class="form-group">
-                            <label>⚡ Срочность</label>
-                            <select name="urgency" required>
-                                <option value="LOW">Низкая</option>
-                                <option value="MEDIUM" selected>Средняя</option>
-                                <option value="HIGH">Высокая</option>
-                                <option value="CRITICAL">Критическая</option>
-                            </select>
-                        </div>
-                        
-                        <!-- Тон -->
-                        <div class="form-group">
-                            <label>🎭 Тон</label>
-                            <select name="tone" required>
-                                <option value="NEUTRAL">Нейтральный</option>
-                                <option value="APOLOGETIC">Извиняющийся</option>
-                                <option value="CONSTRUCTIVE">Конструктивный</option>
-                                <option value="HUMOROUS">С юмором</option>
-                                <option value="PROFESSIONAL">Профессиональный</option>
-                            </select>
-                        </div>
-                        
-                        <!-- Самоирония -->
-                        <div class="form-group checkbox-group">
-                            <input type="checkbox" name="selfIrony" value="true" id="selfIrony">
-                            <label for="selfIrony">😄 Разрешить самоиронию</label>
-                        </div>
-                        
-                        <!-- Дополнительные детали -->
-                        <div class="form-group">
-                            <label>📝 Дополнительные детали</label>
-                            <textarea name="customDetails" placeholder="Опишите ситуацию подробнее..."></textarea>
-                        </div>
-                        
-                        <button type="submit" class="generate-btn">
-                            🚀 Сгенерировать объяснение
-                        </button>
-                    </form>
+<div class="container">
+    <div class="header">
+        <h1>✨ Создание объяснения</h1>
+        <p>Опишите ситуацию — ИИ сгенерирует письмо</p>
+        <a href="/dashboard" class="back-link">← Назад</a>
+    </div>
+
+    <div class="main-content">
+        <div th:if="${error}" class="error-message" th:text="${error}"></div>
+
+        <div class="two-columns">
+            <!-- Левая колонка: форма параметров -->
+            <div class="params-form">
+                <h3>⚙️ Параметры</h3>
+                <form action="/generate" method="post" id="generateForm">
+                    <!-- Скрытое поле для ID черновика -->
+                    <input type="hidden" name="requestId" th:value="${requestId}">
+
+                    <div class="form-group">
+                        <label>👨‍🏫 Кому адресовано</label>
+                        <input type="text" name="recipient" th:value="${params != null ? params.recipient : 'Уважаемый преподаватель'}" required>
+                    </div>
+                    <div class="form-group">
+                        <label>📝 Что случилось?</label>
+                        <textarea name="eventDescription" rows="3" maxlength="200" required th:text="${params != null ? params.eventDescription : ''}"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>🎯 Чего хотите добиться?</label>
+                        <textarea name="desiredAction" rows="2" maxlength="150" required th:text="${params != null ? params.desiredAction : ''}"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>📊 Степень формальности</label>
+                        <select name="formalityLevel">
+                            <option th:each="f : ${formalityLevels}"
+                                    th:value="${f.code}"
+                                    th:text="${f.displayName}"
+                                    th:selected="${params != null && params.formalityLevel == f.code}"></option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>⚡ Срочность</label>
+                        <select name="urgency">
+                            <option th:each="u : ${urgencies}"
+                                    th:value="${u.code}"
+                                    th:text="${u.displayName}"
+                                    th:selected="${params != null && params.urgency == u.code}"></option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>🎭 Тон</label>
+                        <select name="tone">
+                            <option th:each="t : ${tones}"
+                                    th:value="${t.code}"
+                                    th:text="${t.displayName}"
+                                    th:selected="${params != null && params.tone == t.code}"></option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>📏 Размер объяснения</label>
+                        <select name="length">
+                            <option th:each="l : ${lengths}"
+                                    th:value="${l.code}"
+                                    th:text="${l.displayName}"
+                                    th:selected="${params != null && params.length == l.code}"></option>
+                        </select>
+                    </div>
+                    <div class="form-group checkbox-group">
+                        <input type="checkbox" name="selfIrony" value="true" id="selfIrony"
+                               th:checked="${params != null && params.selfIronyAllowed}">
+                        <label for="selfIrony">😄 Разрешить самоиронию</label>
+                    </div>
+                    <div class="form-group">
+                        <label>📝 Дополнительные детали</label>
+                        <textarea name="customDetails" rows="2" th:text="${params != null ? params.customDetails : ''}"></textarea>
+                    </div>
+                    <button type="submit" class="generate-btn">🚀 Сгенерировать</button>
+                </form>
+            </div>
+
+            <!-- Правая колонка: результат -->
+            <div class="result-section">
+                <h3>🤖 Результат генерации</h3>
+                <div class="generated-text" th:utext="${generatedText}">
+                    <p class="placeholder">Настройте параметры и нажмите «Сгенерировать»</p>
                 </div>
-                
-                <!-- Правая колонка: результат -->
-                <div class="result-section">
-                    <h3>
-                        <span>🤖</span>
-                        Результат генерации
-                    </h3>
-                    <div class="generated-text" th:utext="${generatedText}">
-                        <p class="placeholder">
-                            ✨ Настройте параметры и нажмите «Сгенерировать»<br>
-                            Искусственный интеллект создаст идеальное объяснение
-                        </p>
-                    </div>
-                    <div th:if="${generatedText != null}" style="margin-top: 15px; text-align: center;">
-                        <button onclick="copyToClipboard()" style="background: #48bb78; color: white; border: none; padding: 8px 20px; border-radius: 20px; cursor: pointer; margin-right: 10px;">
-                            📋 Копировать текст
-                        </button>
-                        <button onclick="window.location.reload()" style="background: #f59e0b; color: white; border: none; padding: 8px 20px; border-radius: 20px; cursor: pointer;">
-                            🔄 Новый запрос
-                        </button>
-                    </div>
+                <div th:if="${generatedText != null}" class="action-buttons">
+                    <form action="/save-request" method="post" style="display:inline">
+                        <input type="hidden" name="requestId" th:value="${requestId}">
+                        <button type="submit" class="btn-save">💾 Сохранить</button>
+                    </form>
+                    <form action="/complete-request" method="post" style="display:inline">
+                        <input type="hidden" name="requestId" th:value="${requestId}">
+                        <button type="submit" class="btn-complete">✅ Завершить</button>
+                    </form>
+                    <button onclick="copyToClipboard()" class="btn-copy">📋 Копировать</button>
                 </div>
             </div>
         </div>
     </div>
-    
-    <script>
-        function copyToClipboard() {
-            const textElement = document.querySelector('.generated-text');
-            const text = textElement.innerText;
-            
-            navigator.clipboard.writeText(text).then(() => {
-                alert('✅ Текст скопирован в буфер обмена!');
-            }).catch(() => {
-                alert('❌ Не удалось скопировать текст');
-            });
-        }
-    </script>
+</div>
+
+<script>
+    function copyToClipboard() {
+        const text = document.querySelector('.generated-text').innerText;
+        navigator.clipboard.writeText(text).then(() => alert('✅ Текст скопирован в буфер обмена!'))
+                .catch(() => alert('❌ Не удалось скопировать текст'));
+    }
+</script>
 </body>
 </html>
